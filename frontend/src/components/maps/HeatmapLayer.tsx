@@ -1,15 +1,45 @@
 'use client'
 
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { useEffect } from 'react'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Tijuana, B.C. como ubicación por defecto (MVP placeholder)
 const DEFAULT_CENTER: [number, number] = [32.5149, -117.0382]
 const DEFAULT_ZOOM = 12
 
-export default function HeatmapLayer() {
+interface Zone {
+  name: string
+  coords: [number, number]
+}
+
+interface FlyToZoneProps {
+  selectedZone: string | null
+  zones: Zone[]
+}
+
+function FlyToZone({ selectedZone, zones }: FlyToZoneProps) {
+  const map = useMap()
+  useEffect(() => {
+    if (!selectedZone) {
+      map.flyTo(DEFAULT_CENTER, DEFAULT_ZOOM, { duration: 1 })
+      return
+    }
+    const zone = zones.find((z) => z.name === selectedZone)
+    if (zone) {
+      map.flyTo(zone.coords, 14, { duration: 1 })
+    }
+  }, [selectedZone, zones, map])
+  return null
+}
+
+interface HeatmapLayerProps {
+  selectedZone?: string | null
+  zones?: Zone[]
+}
+
+export default function HeatmapLayer({ selectedZone = null, zones = [] }: HeatmapLayerProps) {
   return (
-    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style={{ height: '500px' }}>
+    <div className="rounded-2xl overflow-hidden border border-gray-800 shadow-sm" style={{ height: '500px' }}>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
@@ -19,7 +49,7 @@ export default function HeatmapLayer() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {/* Mapa de calor de zonas con índice de oportunidad — implementación pendiente */}
+        <FlyToZone selectedZone={selectedZone} zones={zones} />
       </MapContainer>
     </div>
   )
