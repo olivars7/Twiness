@@ -1,12 +1,18 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import ChatPanel from '@/components/agent/ChatPanel'
 
 export default function AgentePage() {
   return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-6">Agente IA</h1>
-      <ChatPanel />
-    </main>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-2xl font-black text-white">🤖 Agente IA</h1>
+        <p className="text-gray-500 text-sm mt-1">Asesor de negocios contextualizado · Impulsado por watsonx.ai</p>
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <ChatPanel />
+      </motion.div>
+    </div>
   )
 }
