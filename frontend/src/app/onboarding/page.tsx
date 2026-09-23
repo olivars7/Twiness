@@ -387,7 +387,7 @@ export default function OnboardingPage() {
 
   const goNext = () => {
     if (currentStep === total - 1) {
-      router.push('/proyecto')
+      router.push('/analisis')
       return
     }
     setStep(currentStep + 1, 1)
