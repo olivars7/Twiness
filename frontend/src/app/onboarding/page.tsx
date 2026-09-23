@@ -15,10 +15,10 @@ const transition = { type: 'spring' as const, stiffness: 280, damping: 28 }
 
 // ─── shared input styles ──────────────────────────────────────────────────────
 const inputCls =
-  'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder:text-gray-300 transition'
+  'w-full border border-gray-700 rounded-xl px-4 py-3 bg-gray-800 text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600 transition'
 
 const selectCls =
-  'w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition'
+  'w-full border border-gray-700 rounded-xl px-4 py-3 bg-gray-800 text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition'
 
 // ─── option card ─────────────────────────────────────────────────────────────
 function OptionCard({
@@ -31,8 +31,8 @@ function OptionCard({
       onClick={onClick}
       className={`flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 text-sm font-medium transition-colors
         ${selected
-          ? 'border-blue-500 bg-blue-50 text-blue-700'
-          : 'border-gray-100 bg-white text-gray-500 hover:border-blue-200'}`}
+          ? 'border-blue-500 bg-blue-950 text-blue-400'
+          : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-blue-700'}`}
     >
       <span className="text-3xl">{icon}</span>
       {label}
@@ -49,7 +49,7 @@ function Nav({
       {onBack && (
         <button
           onClick={onBack}
-          className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-500 text-sm font-medium hover:bg-gray-50 transition"
+          className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 text-sm font-medium hover:bg-gray-800 transition"
         >
           ← Atrás
         </button>
@@ -59,8 +59,8 @@ function Nav({
         disabled={!canNext}
         className={`flex-1 py-3 rounded-xl text-sm font-semibold transition
           ${canNext
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
-            : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
+            ? 'bg-blue-600 text-white hover:bg-blue-500'
+            : 'bg-gray-800 text-gray-600 cursor-not-allowed'}`}
       >
         {isLast ? 'Ver mi proyecto →' : 'Continuar →'}
       </button>
@@ -114,8 +114,8 @@ function Step1({ onBack, onNext }: NavProps) {
             onClick={() => setField('businessType', t)}
             className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition
               ${data.businessType === t
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-100 text-gray-500 hover:border-blue-200'}`}
+                ? 'border-blue-500 bg-blue-950 text-blue-400'
+                : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-blue-700'}`}
           >
             {t}
           </button>
@@ -213,8 +213,8 @@ function StepExistente2({ onBack, onNext }: NavProps & { isLast?: boolean }) {
           <button key={c} onClick={() => setField('mainChallenge', c)}
             className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition text-left
               ${data.mainChallenge === c
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-100 text-gray-500 hover:border-blue-200'}`}>
+                ? 'border-blue-500 bg-blue-950 text-blue-400'
+                : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-blue-700'}`}>
             {c}
           </button>
         ))}
@@ -251,8 +251,8 @@ function StepNuevo1({ onBack, onNext }: NavProps) {
               <button key={String(val)} onClick={() => setField('hasLocation', val)}
                 className={`py-3 rounded-xl border text-sm font-medium transition
                   ${data.hasLocation === val
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-100 text-gray-500 hover:border-blue-200'}`}>
+                    ? 'border-blue-500 bg-blue-950 text-blue-400'
+                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-blue-700'}`}>
                 {label}
               </button>
             ))}
@@ -319,8 +319,8 @@ function StepHipotetico2({ onBack, onNext }: NavProps) {
               <button key={c} onClick={() => setField('salesChannel', c)}
                 className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition text-left
                   ${data.salesChannel === c
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-100 text-gray-500 hover:border-blue-200'}`}>
+                    ? 'border-blue-500 bg-blue-950 text-blue-400'
+                    : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-blue-700'}`}>
                 {c}
               </button>
             ))}
@@ -358,13 +358,13 @@ function StepHipotetico3({ onBack, onNext }: NavProps) {
 // ─── helper components ────────────────────────────────────────────────────────
 interface NavProps { onBack?: () => void; onNext: () => void }
 function Label({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-2xl font-bold text-gray-900 leading-snug">{children}</h2>
+  return <h2 className="text-2xl font-bold text-white leading-snug">{children}</h2>
 }
 function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-gray-400 mt-1">{children}</p>
+  return <p className="text-sm text-gray-500 mt-1">{children}</p>
 }
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs font-medium text-gray-500 mb-1.5">{children}</p>
+  return <p className="text-xs font-medium text-gray-400 mb-1.5">{children}</p>
 }
 
 // ─── step resolver ────────────────────────────────────────────────────────────
@@ -393,21 +393,28 @@ export default function OnboardingPage() {
     setStep(currentStep + 1, 1)
   }
   const goBack = () => {
-    if (currentStep === 0) return
+    if (currentStep === 0) {
+      router.push('/selector')
+      return
+    }
     setStep(currentStep - 1, -1)
   }
 
   const StepComponent = steps[currentStep]
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-16">
+    <main className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-6 py-16">
+      {/* logo */}
+      <div className="absolute top-5 left-8 text-xl font-black tracking-tight text-white">
+        viab<span className="text-blue-400">L</span>
+      </div>
       {/* progress dots */}
       <div className="flex gap-1.5 mb-10">
         {Array.from({ length: total }, (_, i) => (
           <div
             key={i}
             className={`h-1.5 rounded-full transition-all duration-300
-              ${i === currentStep ? 'w-6 bg-blue-600' : i < currentStep ? 'w-1.5 bg-blue-300' : 'w-1.5 bg-gray-200'}`}
+              ${i === currentStep ? 'w-6 bg-blue-500' : i < currentStep ? 'w-1.5 bg-blue-800' : 'w-1.5 bg-gray-700'}`}
           />
         ))}
       </div>
@@ -425,7 +432,7 @@ export default function OnboardingPage() {
             transition={transition}
           >
             <StepComponent
-              onBack={currentStep > 0 ? goBack : undefined}
+              onBack={goBack}
               onNext={goNext}
             />
           </motion.div>

@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 
 export type BusinessStatus = 'existente' | 'nuevo' | 'hipotetico' | null
+export type AnalysisMode = 'completo' | 'especifico' | 'escenarios' | 'agente' | 'tramites' | null
 
 export interface OnboardingData {
+  // Selector de modo (Pantalla 1)
+  analysisMode: AnalysisMode
+
   // Paso 1 — tipo
   businessStatus: BusinessStatus
   businessType: string
