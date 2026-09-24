@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, TrendingUp, DollarSign, BarChart3, Scale, Bot,
-  ArrowRight, Sparkles, ChevronRight,
+  ArrowRight, Sparkles, ChevronRight, Sprout, Store,
+  Coffee, Scissors, ShoppingCart, CheckCircle2, XCircle,
 } from 'lucide-react'
 import SquareField from '@/components/ui/SquareField'
 
@@ -16,6 +17,56 @@ function readLS(): Record<string, string> {
   try { return JSON.parse(window.localStorage.getItem(LS_KEY) || '{}') }
   catch { return {} }
 }
+
+// ─── Perfiles ─────────────────────────────────────────────────────────────────
+const PROFILES = [
+  {
+    id: 'idea',
+    icon: Sprout,
+    title: 'Tengo una idea',
+    desc: 'Quiero validar si mi negocio puede funcionar antes de invertir.',
+    color: '#10b981',
+    heroSub: 'Te ayudamos a analizar demanda, competencia y finanzas para saber si tu idea tiene futuro — antes de gastar un peso.',
+  },
+  {
+    id: 'existing',
+    icon: Store,
+    title: 'Ya tengo un negocio',
+    desc: 'Quiero analizar mi operación actual y encontrar áreas de mejora.',
+    color: '#3b82f6',
+    heroSub: 'Analiza el rendimiento actual de tu negocio, detecta riesgos y descubre oportunidades de crecimiento con datos reales.',
+  },
+]
+
+// ─── Tipos de negocio ──────────────────────────────────────────────────────────
+const BUSINESS_TYPES = [
+  { icon: Coffee,      label: 'Cafetería',              color: '#f59e0b', desc: 'Café, bebidas y alimentos ligeros' },
+  { icon: Scissors,    label: 'Barbería',                color: '#8b5cf6', desc: 'Corte, estética y cuidado personal' },
+  { icon: ShoppingCart,label: 'Tienda de conveniencia', color: '#10b981', desc: 'Abarrotes, miscelánea y productos básicos' },
+]
+
+// ─── Quiz ──────────────────────────────────────────────────────────────────────
+const QUIZ_QUESTIONS = [
+  { id: 'local',       text: '¿Ya elegiste o tienes un local?' },
+  { id: 'capital',     text: '¿Sabes cuánto dinero necesitas invertir?' },
+  { id: 'competition', text: '¿Analizaste a tu competencia cercana?' },
+  { id: 'demand',      text: '¿Estimaste cuántos clientes puede tener tu negocio?' },
+]
+
+// ─── Para quién ────────────────────────────────────────────────────────────────
+const FOR_YOU = [
+  '✅ Quieres validar antes de invertir',
+  '✅ Tienes un presupuesto de hasta $500k MXN',
+  '✅ Tu negocio será en Tijuana, B.C.',
+  '✅ No tienes formación financiera formal',
+  '✅ Quieres datos reales, no suposiciones',
+]
+const NOT_FOR_YOU = [
+  '❌ Ya tienes inversores institucionales',
+  '❌ Buscas financiamiento bancario formal',
+  '❌ Operas fuera de Tijuana (por ahora)',
+  '❌ Necesitas contabilidad oficial o fiscal',
+]
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -109,8 +160,22 @@ function MonitorMockup() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const router = useRouter()
-  const [hasProject, setHasProject] = useState(false)
+  const [hasProject, setHasProject]   = useState(false)
   const [projectName, setProjectName] = useState('')
+  const [activeProfile, setActiveProfile] = useState<'idea' | 'existing' | null>(null)
+  const [quizAnswers, setQuizAnswers]     = useState<Record<string, boolean | null>>({})
+  const [quizDone, setQuizDone]           = useState(false)
+
+  const currentProfile = PROFILES.find(p => p.id === activeProfile)
+  const answeredCount  = Object.values(quizAnswers).filter(v => v !== null).length
+  const yesCount       = Object.values(quizAnswers).filter(v => v === true).length
+  const quizReady      = answeredCount === QUIZ_QUESTIONS.length
+
+  function quizMessage() {
+    if (yesCount === 4) return { text: '¡Excelente! Tienes bases sólidas. viabL te ayudará a afinar los detalles.', color: '#10b981' }
+    if (yesCount >= 2) return { text: `Tienes ${4 - yesCount} área(s) clave por definir. viabL las analiza por ti.`, color: '#f59e0b' }
+    return { text: `Te faltan ${4 - yesCount} puntos críticos antes de abrir. viabL te guía paso a paso.`, color: '#ef4444' }
+  }
 
   useEffect(() => {
     const ls = readLS()
@@ -169,7 +234,7 @@ export default function LandingPage() {
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
       <section
-        className="relative px-6 sm:px-12 pt-20 pb-10 overflow-hidden"
+        className="relative px-6 sm:px-12 pt-24 pb-10 overflow-hidden"
         style={{ background: '#fafafa' }}
       >
         {/* Animated navy squares */}
@@ -233,18 +298,54 @@ export default function LandingPage() {
               {' '}antes de invertir...
             </motion.h1>
 
-            {/* Sub */}
+            {/* Sub — cambia según perfil */}
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
+              key={activeProfile ?? 'default'}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.18 }}
-              className="text-base leading-relaxed mb-10"
+              transition={{ duration: 0.35 }}
+              className="text-base leading-relaxed mb-8"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              Analiza demanda, precios, competencia y finanzas en 6 pasos guiados —
-              con datos reales de Tijuana y asesoría impulsada por{' '}
-              <span className="font-semibold" style={{ color: 'var(--color-text)' }}>watsonx.ai.</span>
+              {currentProfile
+                ? currentProfile.heroSub
+                : 'Analiza demanda, precios, competencia y finanzas en 6 pasos guiados — con datos reales de Tijuana y asesoría impulsada por watsonx.ai.'}
             </motion.p>
+
+            {/* Selector de perfil */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="flex flex-col sm:flex-row gap-3 mb-8"
+            >
+              {PROFILES.map((p) => {
+                const Icon = p.icon
+                const active = activeProfile === p.id
+                return (
+                  <motion.button
+                    key={p.id}
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    onClick={() => setActiveProfile(active ? null : p.id as 'idea' | 'existing')}
+                    className="flex-1 flex items-start gap-3 px-4 py-3.5 rounded-2xl text-left transition-all"
+                    style={{
+                      background: active ? `${p.color}12` : '#fff',
+                      border: `1.5px solid ${active ? p.color : 'var(--color-border)'}`,
+                      boxShadow: active ? `0 0 0 3px ${p.color}20` : '0 1px 3px 0 rgb(0 0 0 / 0.05)',
+                    }}
+                  >
+                    <span className="mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${p.color}15` }}>
+                      <Icon size={16} style={{ color: p.color }} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: '#0f0f10' }}>{p.title}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{p.desc}</p>
+                    </div>
+                  </motion.button>
+                )
+              })}
+            </motion.div>
 
             {/* CTA row */}
             <motion.div
@@ -412,6 +513,194 @@ export default function LandingPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TIPOS DE NEGOCIO ────────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-12 py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-border)' }}>
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
+            className="mb-10"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>MVP · Tijuana</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight" style={{ color: '#0f0f10' }}>
+              ¿Qué tipo de negocio<br />quieres analizar?
+            </h2>
+            <p className="text-sm mt-3" style={{ color: 'var(--color-text-secondary)' }}>
+              Selecciona tu giro y empieza el análisis en menos de 5 minutos.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {BUSINESS_TYPES.map(({ icon: Icon, label, color, desc }, i) => (
+              <motion.button
+                key={label}
+                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-20px' }}
+                transition={{ duration: 0.3, delay: i * 0.08 }}
+                whileHover={{ y: -4, boxShadow: `0 12px 32px 0 ${color}22` }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => router.push('/onboarding')}
+                className="flex flex-col items-start gap-4 p-6 rounded-2xl text-left"
+                style={{
+                  background: '#fafafa',
+                  border: `1.5px solid ${color}30`,
+                  borderTop: `3px solid ${color}`,
+                  boxShadow: '0 2px 8px 0 rgb(0 0 0 / 0.04)',
+                  cursor: 'pointer',
+                }}
+              >
+                <span className="w-11 h-11 rounded-2xl flex items-center justify-center"
+                  style={{ background: `${color}15` }}>
+                  <Icon size={22} style={{ color }} />
+                </span>
+                <div>
+                  <p className="font-bold text-base mb-1" style={{ color: '#0f0f10' }}>{label}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
+                </div>
+                <span className="text-xs font-semibold flex items-center gap-1" style={{ color }}>
+                  Analizar este negocio <ArrowRight size={12} />
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── QUIZ DE RIESGO ──────────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-12 py-20" style={{ background: '#fafafa', borderTop: '1px solid var(--color-border)' }}>
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
+            className="mb-10 text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#f59e0b' }}>Diagnóstico rápido</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
+              ¿Qué tan listo estás<br />para abrir tu negocio?
+            </h2>
+            <p className="text-sm mt-3" style={{ color: 'var(--color-text-secondary)' }}>
+              Responde 4 preguntas y descubre qué le falta a tu plan.
+            </p>
+          </motion.div>
+
+          <div className="space-y-3 mb-6">
+            {QUIZ_QUESTIONS.map((q, i) => (
+              <motion.div
+                key={q.id}
+                initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.07 }}
+                className="flex items-center justify-between gap-4 px-5 py-4 rounded-2xl"
+                style={{ background: '#fff', border: '1px solid var(--color-border)' }}
+              >
+                <p className="text-sm font-medium" style={{ color: '#0f0f10' }}>{q.text}</p>
+                <div className="flex gap-2 shrink-0">
+                  {[true, false].map((val) => {
+                    const active = quizAnswers[q.id] === val
+                    return (
+                      <motion.button
+                        key={String(val)}
+                        whileTap={{ scale: 0.93 }}
+                        onClick={() => {
+                          setQuizAnswers(prev => ({ ...prev, [q.id]: val }))
+                          if (Object.keys({ ...quizAnswers, [q.id]: val }).length === QUIZ_QUESTIONS.length) setQuizDone(true)
+                        }}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all"
+                        style={{
+                          background: active ? (val ? '#10b98120' : '#ef444420') : '#f3f4f6',
+                          color: active ? (val ? '#10b981' : '#ef4444') : '#6b7280',
+                          border: `1.5px solid ${active ? (val ? '#10b981' : '#ef4444') : 'transparent'}`,
+                        }}
+                      >
+                        {val ? 'Sí' : 'No'}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <AnimatePresence>
+            {quizReady && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+                style={{
+                  background: `${quizMessage().color}10`,
+                  border: `1.5px solid ${quizMessage().color}40`,
+                }}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-bold mb-1" style={{ color: quizMessage().color }}>
+                    {yesCount === 4 ? '🎉' : yesCount >= 2 ? '⚡' : '🚨'} {quizMessage().text}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                    viabL analiza exactamente los puntos que te faltan — gratis y en minutos.
+                  </p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => router.push('/onboarding')}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shrink-0"
+                  style={{ background: quizMessage().color, color: '#fff' }}
+                >
+                  Empezar análisis <ArrowRight size={14} />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+
+      {/* ── PARA QUIÉN ES ───────────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-12 py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-border)' }}>
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
+            className="mb-10 text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#6b7280' }}>Transparencia</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
+              ¿viabL es para ti?
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.4 }}
+              className="rounded-2xl p-6 space-y-3"
+              style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0' }}
+            >
+              <p className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#15803d' }}>
+                <CheckCircle2 size={16} /> Sí es para ti si...
+              </p>
+              {FOR_YOU.map((item) => (
+                <p key={item} className="text-sm" style={{ color: '#166534' }}>{item}</p>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.08 }}
+              className="rounded-2xl p-6 space-y-3"
+              style={{ background: '#fef2f2', border: '1.5px solid #fecaca' }}
+            >
+              <p className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#dc2626' }}>
+                <XCircle size={16} /> No es para ti si...
+              </p>
+              {NOT_FOR_YOU.map((item) => (
+                <p key={item} className="text-sm" style={{ color: '#991b1b' }}>{item}</p>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
