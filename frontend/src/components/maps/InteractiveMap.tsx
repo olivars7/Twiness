@@ -1,6 +1,7 @@
 'use client'
 
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
+import { useEffect, useState } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -12,15 +13,42 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-// Tijuana, B.C. como ubicación por defecto (MVP placeholder)
 const DEFAULT_CENTER: [number, number] = [32.5149, -117.0382]
 const DEFAULT_ZOOM = 13
 
-export default function InteractiveMap() {
+interface ClickHandlerProps {
+  onLocationSelect: (lat: number, lng: number) => void
+}
+
+function ClickHandler({ onLocationSelect }: ClickHandlerProps) {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng)
+    },
+  })
+  return null
+}
+
+interface InteractiveMapProps {
+  center?: [number, number]
+  radius?: number
+  onLocationSelect?: (lat: number, lng: number) => void
+}
+
+export default function InteractiveMap({
+  center,
+  radius = 500,
+  onLocationSelect,
+}: InteractiveMapProps) {
+  const pinPosition = center ?? DEFAULT_CENTER
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style={{ height: '500px' }}>
+    <div
+      className="rounded-2xl overflow-hidden border border-gray-800 shadow-sm"
+      style={{ height: '500px' }}
+    >
       <MapContainer
-        center={DEFAULT_CENTER}
+        center={pinPosition}
         zoom={DEFAULT_ZOOM}
         style={{ height: '100%', width: '100%' }}
       >
@@ -28,11 +56,17 @@ export default function InteractiveMap() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={DEFAULT_CENTER}>
-          <Popup>Tu ubicación seleccionada</Popup>
+        {onLocationSelect && <ClickHandler onLocationSelect={onLocationSelect} />}
+        <Marker position={pinPosition}>
+          <Popup>
+            {center ? 'Ubicación seleccionada' : 'Ubicación por defecto — haz clic para cambiar'}
+          </Popup>
         </Marker>
-        {/* Radio de análisis 500m */}
-        <Circle center={DEFAULT_CENTER} radius={500} pathOptions={{ color: 'blue', fillOpacity: 0.1 }} />
+        <Circle
+          center={pinPosition}
+          radius={radius}
+          pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1 }}
+        />
       </MapContainer>
     </div>
   )
