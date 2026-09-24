@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { ClipboardList, BarChart3, DollarSign } from 'lucide-react'
+import { ClipboardList, BarChart3, DollarSign, MapPin, Users, Store, Rocket, Lightbulb } from 'lucide-react'
 import { useLocalBusinessData } from '@/hooks/useLocalBusinessData'
 import { useOnboardingStore, type OnboardingData } from '@/store/onboardingStore'
 
@@ -291,7 +291,7 @@ export default function MisDatosPage() {
 
       {/* ── Sección B: Finanzas base ──────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <Section icon={<span>💰</span>} title="Finanzas base" badge="B" badgeColor="bg-amber-50 text-amber-700 border border-amber-200" accentColor="#f59e0b">
+        <Section icon={<DollarSign size={16} strokeWidth={1.75} />} title="Finanzas base" badge="B" badgeColor="bg-amber-50 text-amber-700 border border-amber-200" accentColor="#f59e0b">
           <p className="text-xs font-bold uppercase tracking-wider pt-1 pb-0.5" style={{ color: '#f59e0b' }}>Producto 1</p>
           <EditableField label="Nombre" fieldKey="product1Name" value={data.product1Name} onSave={save} placeholder="No ingresado" />
           <EditableField label="Precio de venta ($)" fieldKey="product1Price" value={data.product1Price}
@@ -315,7 +315,7 @@ export default function MisDatosPage() {
       {/* ── Sección C: Ubicación ─────────────────────────────────────────────── */}
       {(data.targetCity || data.targetZone || data.locationCountry || data.locationCity) && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Section icon={<span>📍</span>} title="Ubicación" badge="C" badgeColor="bg-blue-50 text-blue-700 border border-blue-200" accentColor="#3b82f6">
+          <Section icon={<MapPin size={16} strokeWidth={1.75} />} title="Ubicación" badge="C" badgeColor="bg-blue-50 text-blue-700 border border-blue-200" accentColor="#3b82f6">
             {data.targetCity !== undefined && (
               <EditableField label="Ciudad objetivo" fieldKey="targetCity" value={data.targetCity} onSave={save} />
             )}
@@ -342,7 +342,7 @@ export default function MisDatosPage() {
       {/* ── Sección D: Cliente objetivo ──────────────────────────────────────── */}
       {(data.targetCustomer || data.salesChannel) && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Section icon={<span>👥</span>} title="Cliente objetivo" badge="D" badgeColor="bg-purple-50 text-purple-700 border border-purple-200" accentColor="#7c3aed">
+          <Section icon={<Users size={16} strokeWidth={1.75} />} title="Cliente objetivo" badge="D" badgeColor="bg-purple-50 text-purple-700 border border-purple-200" accentColor="#7c3aed">
             {data.targetCustomer !== undefined && (
               <EditableField label="Perfil de cliente" fieldKey="targetCustomer" value={data.targetCustomer} onSave={save} />
             )}
@@ -360,7 +360,7 @@ export default function MisDatosPage() {
       {/* ── Sección E: Negocio existente ─────────────────────────────────────── */}
       {status === 'existente' && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Section icon={<span>🏪</span>} title="Datos del negocio actual" badge="E" badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200" accentColor="#10b981">
+          <Section icon={<Store size={16} strokeWidth={1.75} />} title="Datos del negocio actual" badge="E" badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200" accentColor="#10b981">
             <EditableField label="Meses operando" fieldKey="monthsOperating" value={data.monthsOperating}
               onSave={save} placeholder="No ingresado" type="number" />
             <EditableField label="Empleados" fieldKey="employeeCount" value={data.employeeCount}
@@ -377,7 +377,7 @@ export default function MisDatosPage() {
       {/* ── Sección E: Negocio nuevo ─────────────────────────────────────────── */}
       {status === 'nuevo' && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Section icon={<span>🚀</span>} title="Plan de apertura" badge="E" badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200" accentColor="#10b981">
+          <Section icon={<Rocket size={16} strokeWidth={1.75} />} title="Plan de apertura" badge="E" badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200" accentColor="#10b981">
             <EditableField label="Fecha de apertura" fieldKey="plannedOpeningDate" value={data.plannedOpeningDate}
               onSave={save} placeholder="No especificada" type="month" />
             <EditableField label="Inversión inicial ($)" fieldKey="initialInvestment" value={data.initialInvestment}
@@ -389,7 +389,7 @@ export default function MisDatosPage() {
       {/* ── Sección E: Hipotético ────────────────────────────────────────────── */}
       {status === 'hipotetico' && data.problemSolved && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Section icon={<span>💡</span>} title="Propuesta de valor" badge="E" badgeColor="bg-purple-50 text-purple-700 border border-purple-200" accentColor="#7c3aed">
+          <Section icon={<Lightbulb size={16} strokeWidth={1.75} />} title="Propuesta de valor" badge="E" badgeColor="bg-purple-50 text-purple-700 border border-purple-200" accentColor="#7c3aed">
             <EditableField label="Problema que resuelves" fieldKey="problemSolved" value={data.problemSolved}
               onSave={save} multiline />
           </Section>

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { FileText } from 'lucide-react'
+import { FileText, CheckCircle2 } from 'lucide-react'
 
 // ═══════════════════════════════════════════════════════════════════
 // TIPOS
@@ -322,7 +322,7 @@ export default function CumplimientoPage() {
       {criticos === 0 && precauciones === 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
           className="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3 flex items-center gap-3">
-          <span className="text-xl">✅</span>
+          <CheckCircle2 size={20} strokeWidth={2} className="text-emerald-600 shrink-0" />
           <p className="text-sm text-emerald-700 font-medium">Sin alertas críticas ni precauciones pendientes — listo para abrir.</p>
         </motion.div>
       )}

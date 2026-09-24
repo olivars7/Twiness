@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { MapPin } from 'lucide-react'
+import { MapPin, Flame, Users, Store, PersonStanding, Star, Smartphone, Clock, TriangleAlert, CheckCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ImprovementCard from '@/components/ui/ImprovementCard'
@@ -181,18 +181,23 @@ function calcSaturation(competitors: CompetitorSnapshot[], radioM: number) {
   return                   { density: +density.toFixed(2), color: 'red' as const,   label: 'Alta',  pct: Math.min(65 + ((density - 5) / 5) * 35, 98) }
 }
 
+type AdvantageIcon = 'star' | 'clock' | 'smartphone'
 function detectAdvantages(competitors: CompetitorSnapshot[]) {
-  const list: { icon: string; title: string; detail: string }[] = []
+  const list: { icon: AdvantageIcon; title: string; detail: string }[] = []
   const weakest = [...competitors].sort((a, b) => (a.rating ?? 5) - (b.rating ?? 5))[0]
   if (weakest?.rating && weakest.rating < 4.0)
-    list.push({ icon: '⭐', title: 'Diferenciación por calidad', detail: `${weakest.name} tiene solo ${weakest.rating}★ — el competidor más vulnerable. Un servicio consistente te da ventaja directa.` })
+    list.push({ icon: 'star', title: 'Diferenciación por calidad', detail: `${weakest.name} tiene solo ${weakest.rating}★ — el competidor más vulnerable. Un servicio consistente te da ventaja directa.` })
   const closed = competitors.filter((c) => !c.openNow)
   if (closed.length > 0)
-    list.push({ icon: '🕉', title: 'Gap de horario detectado', detail: `${closed.length} de ${competitors.length} competidores están cerrados ahora. Horario extendido captura esa demanda.` })
+    list.push({ icon: 'clock', title: 'Gap de horario detectado', detail: `${closed.length} de ${competitors.length} competidores están cerrados ahora. Horario extendido captura esa demanda.` })
   const lowReviews = competitors.filter((c) => (c.reviewCount ?? 999) < 100)
   if (lowReviews.length > 0)
-    list.push({ icon: '📱', title: 'Baja presencia digital en la zona', detail: `${lowReviews.length} competidor(es) con <100 reseñas. Con Google Maps activo desde el día 1 puedes superarlos en 60–90 días.` })
+    list.push({ icon: 'smartphone', title: 'Baja presencia digital en la zona', detail: `${lowReviews.length} competidor(es) con <100 reseñas. Con Google Maps activo desde el día 1 puedes superarlos en 60–90 días.` })
   return list
+}
+
+const ADVANTAGE_ICONS: Record<AdvantageIcon, React.ElementType> = {
+  star: Star, clock: Clock, smartphone: Smartphone,
 }
 
 const ratingDotColor = (r?: number) => {
@@ -264,20 +269,22 @@ export default function ZonaEstrategicaPage() {
   const overall     = overallScore()
   const overallInfo = overallLabel(overall)
 
+  type AlertEntry = { icon: React.ElementType; text: string; fix: string; color: string }
+  type WinEntry   = { icon: React.ElementType; text: string }
   const { alerts, wins } = (() => {
-    const alerts: { icon: string; text: string; fix: string; color: string }[] = []
-    const wins: { icon: string; text: string }[] = []
+    const alerts: AlertEntry[] = []
+    const wins: WinEntry[] = []
     for (const f of FACTORS) {
       if (f.label === 'Competidores cercanos' && f.score < 50)
-        alerts.push({ icon: '🏬', text: 'Alta competencia en tu radio.', fix: 'Diferencia con producto exclusivo, mejor servicio o precio.', color: 'border-red-700 bg-red-950' })
+        alerts.push({ icon: Store,          text: 'Alta competencia en tu radio.',   fix: 'Diferencia con producto exclusivo, mejor servicio o precio.',   color: 'border-red-700 bg-red-950' })
       else if (f.label === 'Tráfico peatonal' && f.score < 50)
-        alerts.push({ icon: '🚶', text: 'Bajo tránsito en la zona.', fix: 'Refuerza con redes sociales, Google Maps y delivery.', color: 'border-red-700 bg-red-950' })
+        alerts.push({ icon: PersonStanding, text: 'Bajo tránsito en la zona.',       fix: 'Refuerza con redes sociales, Google Maps y delivery.',          color: 'border-red-700 bg-red-950' })
       else if (f.label === 'Nivel socioeconómico' && f.score < 50)
-        alerts.push({ icon: '👥', text: 'Poder adquisitivo limitado.', fix: 'Ajusta ticket promedio con opciones accesibles.', color: 'border-yellow-700 bg-yellow-950' })
-      if (f.score >= 70) wins.push({ icon: '✓', text: `${f.label} favorable (${f.score}/100)` })
+        alerts.push({ icon: Users,          text: 'Poder adquisitivo limitado.',     fix: 'Ajusta ticket promedio con opciones accesibles.',               color: 'border-yellow-700 bg-yellow-950' })
+      if (f.score >= 70) wins.push({ icon: CheckCircle, text: `${f.label} favorable (${f.score}/100)` })
     }
     for (const s of SAFETY_FACTORS) {
-      if (s.level === 'bajo') alerts.push({ icon: '⚠️', text: `Riesgo: ${s.label}.`, fix: s.detail, color: 'border-red-700 bg-red-950' })
+      if (s.level === 'bajo') alerts.push({ icon: TriangleAlert, text: `Riesgo: ${s.label}.`, fix: s.detail, color: 'border-red-700 bg-red-950' })
     }
     return { alerts, wins }
   })()
@@ -387,18 +394,32 @@ export default function ZonaEstrategicaPage() {
         <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Alertas y cómo resolverlas</p>
         {alerts.length === 0 && <p className="text-sm text-emerald-600">Sin riesgos críticos detectados en esta zona.</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {alerts.map((a, i) => (
-            <div key={i} className="rounded-xl border p-4"
-              style={a.color.includes('red') ? { borderColor: '#fca5a5', background: '#fef2f2' } : { borderColor: '#fde68a', background: '#fffbeb' }}>
-              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{a.text}</p>
-              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{a.fix}</p>
-            </div>
-          ))}
+          {alerts.map((a, i) => {
+            const AIcon = a.icon
+            return (
+              <div key={i} className="flex gap-3 rounded-xl border p-4"
+                style={a.color.includes('red') ? { borderColor: '#fca5a5', background: '#fef2f2' } : { borderColor: '#fde68a', background: '#fffbeb' }}>
+                <AIcon size={15} strokeWidth={2} className="shrink-0 mt-0.5" style={{ color: a.color.includes('red') ? '#dc2626' : '#d97706' }} />
+                <div>
+                  <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{a.text}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{a.fix}</p>
+                </div>
+              </div>
+            )
+          })}
           {wins.length > 0 && (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:col-span-2">
               <p className="text-sm font-semibold text-emerald-700 mb-2">Puntos a tu favor</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {wins.map((w) => <p key={w.text} className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{w.text}</p>)}
+              <div className="flex flex-col gap-1">
+                {wins.map((w) => {
+                  const WIcon = w.icon
+                  return (
+                    <p key={w.text} className="flex items-center gap-1.5 text-sm text-emerald-700">
+                      <WIcon size={13} strokeWidth={2.2} />
+                      {w.text}
+                    </p>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -434,7 +455,8 @@ export default function ZonaEstrategicaPage() {
                 : { background: '#1f1f1f', color: '#a1a1aa', border: '1px solid #2f2f2f' }
               }
             >
-              {showHeatmap ? '🔥 Calor ON' : '🔥 Calor'}
+              <Flame size={12} strokeWidth={2} className="inline mr-1" />
+              {showHeatmap ? 'Calor ON' : 'Calor'}
             </button>
             {/* Toggle Competidores */}
             <button
@@ -445,7 +467,8 @@ export default function ZonaEstrategicaPage() {
                 : { background: '#1f1f1f', color: '#a1a1aa', border: '1px solid #2f2f2f' }
               }
             >
-              {showCompetitors ? '📍 Competidores ON' : '📍 Competidores'}
+              <MapPin size={12} strokeWidth={2} className="inline mr-1" />
+              {showCompetitors ? 'Competidores ON' : 'Competidores'}
             </button>
             {/* Separador */}
             <div className="w-px h-4 shrink-0" style={{ background: '#2f2f2f' }} />
@@ -506,7 +529,10 @@ export default function ZonaEstrategicaPage() {
                   ? { background: '#052e16', color: '#4ade80', cursor: 'default' }
                   : { background: '#3b82f6', color: '#fff' }
                 }>
-                {confirmed ? '✓ Ubicación guardada' : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`}
+                {confirmed
+                  ? <><CheckCircle size={14} strokeWidth={2} className="inline mr-1.5" />Ubicación guardada</>
+                  : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`
+                }
               </button>
             </motion.div>
           )}
@@ -695,14 +721,20 @@ export default function ZonaEstrategicaPage() {
             Detectado automáticamente al comparar rating, horario y presencia digital de los competidores.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {advantages.map((a, i) => (
-              <div key={i} className="card flex gap-4 p-4 rounded-2xl transition-colors">
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{a.title}</p>
-                  <p className="text-sm mt-0.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{a.detail}</p>
+            {advantages.map((a, i) => {
+              const AIcon = ADVANTAGE_ICONS[a.icon]
+              return (
+                <div key={i} className="card flex gap-3 p-4 rounded-2xl transition-colors">
+                  <div className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5" style={{ background: 'var(--color-input)' }}>
+                    <AIcon size={14} strokeWidth={1.75} style={{ color: 'var(--color-text-secondary)' }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{a.title}</p>
+                    <p className="text-sm mt-0.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{a.detail}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </motion.div>
       )}

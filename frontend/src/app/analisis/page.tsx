@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import StarField from '@/components/ui/StarField'
+import { MapPin, Swords, DollarSign, TrendingUp, BarChart3, FileText, MessageSquare, type LucideIcon } from 'lucide-react'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 interface CardData {
   id: string
   theme: 'green' | 'yellow' | 'red' | 'blue' | 'purple'
-  icon: string
+  icon: LucideIcon
   title: string
   value: string
   summary: string
@@ -71,7 +72,7 @@ const CARDS: CardData[] = [
   {
     id: 'ubicacion',
     theme: 'blue',
-    icon: '📍',
+    icon: MapPin,
     title: 'Ubicación',
     value: 'Zona Río',
     summary: 'Tu zona tiene alta densidad comercial y buena accesibilidad.',
@@ -86,7 +87,7 @@ const CARDS: CardData[] = [
   {
     id: 'competencia',
     theme: 'yellow',
-    icon: '⚔️',
+    icon: Swords,
     title: 'Competencia',
     value: '4 competidores',
     summary: 'Hay competencia moderada en un radio de 800 m.',
@@ -101,7 +102,7 @@ const CARDS: CardData[] = [
   {
     id: 'precios',
     theme: 'green',
-    icon: '💲',
+    icon: DollarSign,
     title: 'Precios',
     value: 'Posición media-alta',
     summary: 'Tu precio está 11% sobre el promedio del mercado.',
@@ -116,7 +117,7 @@ const CARDS: CardData[] = [
   {
     id: 'demanda',
     theme: 'green',
-    icon: '📈',
+    icon: TrendingUp,
     title: 'Demanda',
     value: '~3,200 personas',
     summary: 'Mercado potencial en tu zona con perfil de cliente objetivo.',
@@ -131,7 +132,7 @@ const CARDS: CardData[] = [
   {
     id: 'financiero',
     theme: 'blue',
-    icon: '📊',
+    icon: BarChart3,
     title: 'Finanzas',
     value: 'Viabilidad positiva',
     summary: 'Con los datos ingresados tu negocio es financieramente viable.',
@@ -146,7 +147,7 @@ const CARDS: CardData[] = [
   {
     id: 'tramites',
     theme: 'yellow',
-    icon: '🧾',
+    icon: FileText,
     title: 'Trámites',
     value: '6 trámites pendientes',
     summary: 'Necesitas completar 6 permisos antes de abrir.',
@@ -268,8 +269,10 @@ export default function AnalisisPage() {
             {/* ── Encabezado ───────────────────────────────────────────── */}
             <div className="flex items-start justify-between px-8 pt-8 pb-6">
               <div className="flex items-center gap-4">
-                <span className="text-4xl">{card.icon}</span>
-                <div>
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                    {(() => { const Icon = card.icon; return <Icon size={22} strokeWidth={1.75} className="text-white" /> })()}
+                  </div>
+                  <div>
                   <p className="text-2xl font-black text-white leading-tight">{card.title}</p>
                   <p className={`text-base font-bold mt-0.5 ${t.valueTxt}`}>{card.value}</p>
                 </div>
@@ -302,7 +305,10 @@ export default function AnalisisPage() {
 
             {/* ── Insight IA ────────────────────────────────────────────── */}
             <div className={`mx-8 my-6 rounded-2xl border p-4 ${t.detailBg} ${t.detailBorder}`}>
-              <p className="text-xs text-gray-500 font-medium mb-1.5">💬 Análisis IA</p>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <MessageSquare size={12} strokeWidth={2} className="text-gray-500" />
+                <p className="text-xs text-gray-500 font-medium">Análisis IA</p>
+              </div>
               <p className="text-sm text-gray-200 leading-relaxed">{card.insight}</p>
             </div>
 
