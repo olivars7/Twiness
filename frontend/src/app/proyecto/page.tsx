@@ -57,11 +57,9 @@ const SECTIONS = [
     color: '#f59e0b',
     description: 'Proyecciones y equilibrio',
     modules: [
-      { key: 'estado-resultados' as ModuleKey, href: '/proyecto/financiero/estado-resultados', label: 'Estado de Resultados', desc: 'Ingresos, costos, márgenes y utilidad neta',        accent: '#3b82f6' },
-      { key: 'break-even'        as ModuleKey, href: '/proyecto/financiero/break-even',        label: 'Punto de Equilibrio', desc: 'Break-even, margen de seguridad y riesgo (GAO)',    accent: '#f59e0b' },
-      { key: 'escenarios'        as ModuleKey, href: '/proyecto/escenarios',                   label: 'Escenarios',          desc: 'Simulador ¿Qué pasa si…? con variables de negocio', accent: '#7c3aed' },
+      { key: 'simulador' as ModuleKey, href: '/proyecto/financiero', label: 'Simulador de Rentabilidad', desc: 'Break-even, escenarios, proyección y diagnóstico financiero', accent: '#f59e0b' },
     ],
-    grid: 'three',
+    grid: 'single',
   },
   {
     id: 'gestion',
