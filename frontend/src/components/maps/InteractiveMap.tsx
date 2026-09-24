@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from 'react-leaflet'
+import { useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -26,6 +26,18 @@ function ClickHandler({ onLocationSelect }: ClickHandlerProps) {
       onLocationSelect(e.latlng.lat, e.latlng.lng)
     },
   })
+  return null
+}
+
+interface RecenterProps {
+  center: [number, number]
+}
+
+function RecenterMap({ center }: RecenterProps) {
+  const map = useMap()
+  useEffect(() => {
+    map.flyTo(center, map.getZoom(), { duration: 0.8 })
+  }, [center, map])
   return null
 }
 
@@ -57,6 +69,7 @@ export default function InteractiveMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {onLocationSelect && <ClickHandler onLocationSelect={onLocationSelect} />}
+        {center && <RecenterMap center={center} />}
         <Marker position={pinPosition}>
           <Popup>
             {center ? 'Ubicación seleccionada' : 'Ubicación por defecto — haz clic para cambiar'}
