@@ -227,9 +227,10 @@ export default function AnalisisPage() {
 
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-        <span className="text-xl font-black tracking-tight">
-          viab<span className="text-blue-400">L</span>
-        </span>
+        <div className="flex items-center gap-3">
+          <img src="/logoBasico.png" alt="viabL" className="h-12 w-auto" />
+          <span className="text-2xl font-black tracking-tight">viab<span className="text-blue-400">L</span></span>
+        </div>
         <div className="flex items-center gap-3">
           {/* Progress dots */}
           <div className="flex gap-1.5">

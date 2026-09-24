@@ -30,8 +30,11 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
 
       {/* Top nav */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-gray-800 bg-gray-950 sticky top-0 z-30">
-        <Link href="/" className="text-xl font-black tracking-tight hover:text-blue-400 transition-colors">
-          viab<span className="text-blue-400">L</span>
+        <Link href="/">
+          <div className="flex items-center gap-3">
+            <img src="/logoBasico.png" alt="viabL" className="h-12 w-auto" />
+            <span className="text-2xl font-black tracking-tight">viab<span className="text-blue-400">L</span></span>
+          </div>
         </Link>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-600 hidden sm:block">Mi Proyecto</span>

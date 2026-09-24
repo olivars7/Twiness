@@ -405,8 +405,11 @@ export default function OnboardingPage() {
   return (
     <main className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-6 py-16">
       {/* logo */}
-      <div className="absolute top-5 left-8 text-xl font-black tracking-tight text-white">
-        viab<span className="text-blue-400">L</span>
+      <div className="absolute top-5 left-8">
+        <div className="flex items-center gap-3">
+          <img src="/logoBasico.png" alt="viabL" className="h-12 w-auto" />
+          <span className="text-2xl font-black tracking-tight">viab<span className="text-blue-400">L</span></span>
+        </div>
       </div>
       {/* progress dots */}
       <div className="flex gap-1.5 mb-10">

@@ -33,9 +33,10 @@ export default function LandingPage() {
 
       {/* ── NAV ── */}
       <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800">
-        <span className="text-2xl font-black tracking-tight">
-          viab<span className="text-blue-400">L</span>
-        </span>
+        <div className="flex items-center gap-3">
+          <img src="/logoBasico.png" alt="viabL" className="h-12 w-auto" />
+          <span className="text-2xl font-black tracking-tight">viab<span className="text-blue-400">L</span></span>
+        </div>
         <span className="text-xs text-gray-500 font-medium tracking-widest uppercase">
           MVP · Tijuana, B.C.
         </span>
