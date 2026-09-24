@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import StarField from '@/components/ui/StarField'
@@ -183,6 +183,19 @@ export default function AnalisisPage() {
     setDirection(-1)
     setIndex(i => i - 1)
   }
+
+  // Enter key → advance card
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Enter') return
+      if ((document.activeElement as HTMLElement)?.tagName === 'BUTTON') return
+      e.preventDefault()
+      goNext()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index])
 
   const variants = {
     enter:  (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),

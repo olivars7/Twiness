@@ -1,6 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 import { useOnboardingStore, type BusinessStatus, type OnboardingData } from '@/store/onboardingStore'
 import { useRouter } from 'next/navigation'
 import StarField from '@/components/ui/StarField'
@@ -698,11 +699,20 @@ function buildSteps(status: BusinessStatus): StepComponent[] {
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
+
+/** All focusable inputs/textareas/selects inside a container, in DOM order */
+function getFocusable(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>('input, textarea, select')
+  ).filter(el => !(el as HTMLInputElement).disabled && el.tabIndex !== -1)
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
   const { currentStep, direction, setStep, data } = useOnboardingStore()
   const steps = buildSteps(data.businessStatus ?? null)
   const total = steps.length
+  const mainRef = useRef<HTMLElement>(null)
 
   function goNext() {
     if (currentStep === total - 1) { router.push('/analisis'); return }
@@ -713,10 +723,37 @@ export default function OnboardingPage() {
     setStep(currentStep - 1, -1)
   }
 
+  // Enter: focus next input, or advance card when on the last one
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Enter') return
+      // Allow newlines in textareas
+      if ((document.activeElement as HTMLElement)?.tagName === 'TEXTAREA') return
+      // Let buttons handle their own Enter natively
+      if ((document.activeElement as HTMLElement)?.tagName === 'BUTTON') return
+
+      const container = mainRef.current
+      if (!container) return
+      const focusable = getFocusable(container)
+      const idx = focusable.indexOf(document.activeElement as HTMLElement)
+
+      if (idx !== -1 && idx < focusable.length - 1) {
+        e.preventDefault()
+        focusable[idx + 1].focus()
+      } else {
+        e.preventDefault()
+        goNext()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, total])
+
   const StepComponent = steps[currentStep]
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 overflow-hidden" style={{ background: '#ffffff', color: 'var(--color-text)' }}>
+    <main ref={mainRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 overflow-hidden" style={{ background: '#ffffff', color: 'var(--color-text)' }}>
       <StarField />
 
       {/* Progress dots */}
