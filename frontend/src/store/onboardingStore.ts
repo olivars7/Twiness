@@ -22,6 +22,7 @@ export interface OnboardingData {
   product2Unit: string          // Unidad de medida
   // Global
   monthlyFixedCosts: string     // Gastos fijos mensuales estimados
+  extraProducts: string         // JSON array of {name,price,cost,unit} for products 3+
 
   // ── Sección C: Negocio EXISTENTE ──────────────────────────────────────────
   monthsOperating: string
@@ -38,6 +39,8 @@ export interface OnboardingData {
   locationState: string
   locationCity: string
   locationNeighborhood: string
+  locationLat: number | null
+  locationLng: number | null
 
   // ── Sección E: Negocio HIPOTÉTICO ─────────────────────────────────────────
   targetCity: string

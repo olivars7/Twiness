@@ -1,15 +1,21 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef } from 'react'
-import { useOnboardingStore, type BusinessStatus, type OnboardingData } from '@/store/onboardingStore'
+import { useEffect, useRef, useState } from 'react'
+import { useOnboardingStore, type BusinessStatus } from '@/store/onboardingStore'
 import { useRouter } from 'next/navigation'
 import StarField from '@/components/ui/StarField'
+import dynamic from 'next/dynamic'
 import {
   Flag, Store, Rocket, Lightbulb, Tag, PenLine, Wallet,
   BarChart2, Target, CalendarDays, Map, ShoppingCart,
   MessageSquare, MapPin, TrendingUp, User,
 } from 'lucide-react'
+
+const LocationPickerMap = dynamic(
+  () => import('@/components/maps/LocationPickerMap'),
+  { ssr: false, loading: () => <div className="rounded-2xl border" style={{ height: 300, borderColor: 'var(--color-border)', background: 'var(--color-card)' }} /> }
+)
 
 // ─── Paleta de temas ──────────────────────────────────────────────────────────
 type Theme = 'blue' | 'purple' | 'yellow' | 'green' | 'red'
@@ -52,6 +58,8 @@ function chipBtn(theme: Theme, selected: boolean) {
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 interface NavProps { onBack?: () => void; onNext: () => void; canNext: boolean; isLast?: boolean }
 function Nav({ onBack, onNext, canNext, isLast }: NavProps) {
+  // On the last step, always allow proceeding to results
+  const enabled = isLast ? true : canNext
   return (
     <div className="flex gap-3 mt-8">
       {onBack && (
@@ -61,9 +69,9 @@ function Nav({ onBack, onNext, canNext, isLast }: NavProps) {
           ← Atrás
         </button>
       )}
-      <button onClick={onNext} disabled={!canNext}
+      <button onClick={onNext} disabled={!enabled}
         className="flex-1 py-3 rounded-xl text-sm font-semibold transition"
-        style={canNext
+        style={enabled
           ? { background: 'var(--color-accent)', color: 'var(--color-accent-fg)' }
           : { background: 'var(--color-border)', color: 'var(--color-text-muted)', cursor: 'not-allowed' }
         }>
@@ -168,19 +176,46 @@ function Step1({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
     'Ropa / Moda', 'Tecnología / Software', 'Salud / Bienestar',
     'Educación', 'Servicios profesionales', 'Otro',
   ]
+  const otroSelected = data.businessType !== undefined &&
+    !types.slice(0, -1).includes(data.businessType)
+  const displaySelected = otroSelected ? 'Otro' : data.businessType
+
+  function handleSelect(t: string) {
+    if (t !== 'Otro') {
+      setField('businessType', t)
+    } else {
+      // Mark as "otro" selection but keep any previous custom text
+      if (!otroSelected) setField('businessType', '')
+    }
+  }
+
   return (
     <StepCard theme="purple" icon={<Tag size={28} strokeWidth={1.75} />} badgeLabel="Categoría">
       <Label>¿Qué tipo de negocio es?</Label>
       <Hint>Elige la categoría que mejor lo describe.</Hint>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-5 mb-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-5">
         {types.map((t) => (
-          <button key={t} onClick={() => setField('businessType', t)}
-            className={chipBtn('purple', data.businessType === t)}>
+          <button key={t} onClick={() => handleSelect(t)}
+            className={chipBtn('purple', displaySelected === t)}>
             {t}
           </button>
         ))}
       </div>
-      <Nav onBack={onBack} onNext={onNext} canNext={!!data.businessType} />
+      {otroSelected && (
+        <div className="mt-3">
+          <FieldLabel>Describe tu tipo de negocio</FieldLabel>
+          <input
+            className={inputCls('purple')}
+            placeholder="ej. Lavandería, Floristería, Papelería…"
+            value={data.businessType ?? ''}
+            autoFocus
+            onChange={(e) => setField('businessType', e.target.value)}
+          />
+        </div>
+      )}
+      <div className="mb-2 mt-4">
+        <Nav onBack={onBack} onNext={onNext} canNext={!!data.businessType} />
+      </div>
     </StepCard>
   )
 }
@@ -212,58 +247,82 @@ function Step2({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   )
 }
 
+// ─── Tipo de producto extra ────────────────────────────────────────────────────
+interface ProductEntry { name: string; price: string; cost: string; unit: string }
+const PRESET_UNITS = ['pieza', 'kg', 'litro', 'hora', 'servicio', 'paquete', 'otro']
+
 // Paso 2.5 — Finanzas base [yellow / Finanzas] — para todos
 function ProductBlock({
-  theme,
   num,
-  nameKey, priceKey, costKey, unitKey,
-  nameVal, priceVal, costVal, unitVal,
+  entry,
   onChange,
+  onRemove,
 }: {
-  theme: 'yellow'
-  num: 1 | 2
-  nameKey: keyof OnboardingData
-  priceKey: keyof OnboardingData
-  costKey: keyof OnboardingData
-  unitKey: keyof OnboardingData
-  nameVal: string; priceVal: string; costVal: string; unitVal: string
-  onChange: (key: keyof OnboardingData, val: string) => void
+  num: number
+  entry: ProductEntry
+  onChange: (field: keyof ProductEntry, val: string) => void
+  onRemove?: () => void
 }) {
-  const units = ['pieza', 'kg', 'litro', 'hora', 'servicio', 'paquete', 'otro']
+  // otroMode tracks whether the user clicked "otro" — separate from the unit value
+  const isCustomUnit = entry.unit !== '' && !PRESET_UNITS.slice(0, -1).includes(entry.unit)
+  const [otroMode, setOtroMode] = useState(isCustomUnit)
+  const chipHighlight = otroMode ? 'otro' : entry.unit
+
+  function handleUnitChip(u: string) {
+    if (u === 'otro') {
+      setOtroMode(true)
+      // Keep previous custom text if any; don't clear a valid preset value
+      if (PRESET_UNITS.slice(0, -1).includes(entry.unit)) onChange('unit', '')
+    } else {
+      setOtroMode(false)
+      onChange('unit', u)
+    }
+  }
+
   return (
     <div className="rounded-2xl px-4 py-4 flex flex-col gap-3" style={{ border: '1px solid #f59e0b50', background: '#f59e0b08' }}>
-      <div className="flex items-center gap-2">
-        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#d97706' }}>Producto {num}</p>
-        {num === 2 && (
-          <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>(opcional)</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#d97706' }}>Producto {num}</p>
+          {num === 1 && (
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>(requerido)</span>
+          )}
+        </div>
+        {onRemove && (
+          <button type="button" onClick={onRemove}
+            className="text-xs font-medium px-2 py-1 rounded-lg transition"
+            style={{ color: '#ef4444', background: '#fee2e2' }}
+            title="Eliminar producto">
+            ✕
+          </button>
         )}
       </div>
       <div>
         <FieldLabel>Nombre del producto / servicio</FieldLabel>
-        <input className={inputCls(theme)} placeholder={num === 1 ? 'ej. Café americano' : 'ej. Croissant de mantequilla'}
-          value={nameVal}
-          onChange={(e) => onChange(nameKey, e.target.value)} />
+        <input className={inputCls('yellow')} placeholder="ej. Café americano"
+          value={entry.name}
+          onChange={(e) => onChange('name', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel>Precio de venta ($)</FieldLabel>
-          <MoneyInput theme={theme} placeholder="ej. 50" value={priceVal}
-            onChange={(raw) => onChange(priceKey, raw)} />
+          <MoneyInput theme="yellow" placeholder="ej. 50" value={entry.price}
+            onChange={(raw) => onChange('price', raw)} />
         </div>
         <div>
           <FieldLabel>Costo por unidad ($)</FieldLabel>
-          <MoneyInput theme={theme} placeholder="ej. 14" value={costVal}
-            onChange={(raw) => onChange(costKey, raw)} />
+          <MoneyInput theme="yellow" placeholder="ej. 14" value={entry.cost}
+            onChange={(raw) => onChange('cost', raw)} />
         </div>
       </div>
       <div>
         <FieldLabel>Unidad de medida</FieldLabel>
         <div className="flex flex-wrap gap-2 mt-1">
-          {units.map((u) => (
+          {PRESET_UNITS.map((u) => (
             <button key={u} type="button"
-              onClick={() => onChange(unitKey, u)}
+              onClick={() => handleUnitChip(u)}
               className="px-3 py-1.5 rounded-lg border text-xs font-medium transition"
-              style={unitVal === u
+              style={chipHighlight === u
                 ? { borderColor: '#f59e0b', background: '#fef3c7', color: '#92400e' }
                 : { borderColor: 'var(--color-border)', background: 'var(--color-card)', color: 'var(--color-text-secondary)' }
               }>
@@ -271,6 +330,15 @@ function ProductBlock({
             </button>
           ))}
         </div>
+        {otroMode && (
+          <input
+            className={inputCls('yellow') + ' mt-2'}
+            placeholder="ej. bandeja, caja, lote…"
+            value={entry.unit}
+            autoFocus
+            onChange={(e) => onChange('unit', e.target.value)}
+          />
+        )}
       </div>
     </div>
   )
@@ -278,31 +346,72 @@ function ProductBlock({
 
 function Step25({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const { data, setField } = useOnboardingStore()
-  const canNext = !!(
-    data.product1Name && data.product1Price && data.product1Cost && data.product1Unit &&
-    data.monthlyFixedCosts
-  )
+
+  // Build a unified products array from store fields
+  function readProducts(): ProductEntry[] {
+    const extra: ProductEntry[] = (() => {
+      try { return JSON.parse(data.extraProducts ?? '[]') } catch { return [] }
+    })()
+    const p1: ProductEntry = { name: data.product1Name ?? '', price: data.product1Price ?? '', cost: data.product1Cost ?? '', unit: data.product1Unit ?? '' }
+    const p2: ProductEntry = { name: data.product2Name ?? '', price: data.product2Price ?? '', cost: data.product2Cost ?? '', unit: data.product2Unit ?? '' }
+    // Show p2 only if it has data or extra has items
+    const base = extra.length > 0 || p2.name ? [p1, p2, ...extra] : [p1]
+    return base
+  }
+
+  const [products, setProducts] = useState<ProductEntry[]>(readProducts)
+
+  function persistProducts(next: ProductEntry[]) {
+    setProducts(next)
+    // slot 1 → product1*, slot 2 → product2*, rest → extraProducts
+    const [p1, p2, ...extra] = [...next, { name: '', price: '', cost: '', unit: '' }, { name: '', price: '', cost: '', unit: '' }]
+    setField('product1Name', p1.name); setField('product1Price', p1.price)
+    setField('product1Cost', p1.cost); setField('product1Unit', p1.unit)
+    setField('product2Name', p2.name); setField('product2Price', p2.price)
+    setField('product2Cost', p2.cost); setField('product2Unit', p2.unit)
+    setField('extraProducts', JSON.stringify(extra))
+  }
+
+  function updateProduct(idx: number, field: keyof ProductEntry, val: string) {
+    const next = products.map((p, i) => i === idx ? { ...p, [field]: val } : p)
+    persistProducts(next)
+  }
+
+  function addProduct() {
+    persistProducts([...products, { name: '', price: '', cost: '', unit: '' }])
+  }
+
+  function removeProduct(idx: number) {
+    persistProducts(products.filter((_, i) => i !== idx))
+  }
+
+  const p1 = products[0] ?? { name: '', price: '', cost: '', unit: '' }
+  const canNext = !!(p1.name && p1.price && p1.cost && p1.unit && data.monthlyFixedCosts)
+
   return (
     <StepCard theme="yellow" icon={<Wallet size={28} strokeWidth={1.75} />} badgeLabel="Finanzas">
-      <Label>Números clave de tu negocio</Label>
-      <Hint>El producto 1 es requerido; el producto 2 es opcional.</Hint>
-      <div className="flex flex-col gap-4 mt-5 mb-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="flex items-center justify-between">
+        <Label>Números clave de tu negocio</Label>
+        <button
+          type="button"
+          onClick={addProduct}
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition"
+          style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b60' }}
+        >
+          <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Agregar producto
+        </button>
+      </div>
+      <Hint>El primer producto es requerido; los demás son opcionales.</Hint>
+      <div className="flex flex-col gap-4 mt-4 mb-2">
+        {products.map((p, idx) => (
           <ProductBlock
-            theme="yellow" num={1}
-            nameKey="product1Name" priceKey="product1Price" costKey="product1Cost" unitKey="product1Unit"
-            nameVal={data.product1Name ?? ''} priceVal={data.product1Price ?? ''}
-            costVal={data.product1Cost ?? ''} unitVal={data.product1Unit ?? ''}
-            onChange={(k, v) => setField(k, v as never)}
+            key={idx}
+            num={idx + 1}
+            entry={p}
+            onChange={(f, v) => updateProduct(idx, f, v)}
+            onRemove={idx > 0 ? () => removeProduct(idx) : undefined}
           />
-          <ProductBlock
-            theme="yellow" num={2}
-            nameKey="product2Name" priceKey="product2Price" costKey="product2Cost" unitKey="product2Unit"
-            nameVal={data.product2Name ?? ''} priceVal={data.product2Price ?? ''}
-            costVal={data.product2Cost ?? ''} unitVal={data.product2Unit ?? ''}
-            onChange={(k, v) => setField(k, v as never)}
-          />
-        </div>
+        ))}
         <div>
           <FieldLabel>Gastos fijos mensuales estimados ($)</FieldLabel>
           <MoneyInput theme="yellow" placeholder="ej. 25,000" value={data.monthlyFixedCosts ?? ''}
@@ -494,39 +603,92 @@ function StepHipotetico3({ onBack, onNext }: { onBack: () => void; onNext: () =>
 // Ubicación — compartido por los tres flujos [blue / Ubicación]
 function StepUbicacion({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const { data, setField } = useOnboardingStore()
+  const [tab, setTab] = useState<'texto' | 'mapa'>('texto')
+
+  function handleMapPick(lat: number, lng: number, displayName?: string) {
+    setField('locationLat', lat)
+    setField('locationLng', lng)
+    // Auto-fill city from display name if not already set
+    if (displayName && !data.locationCity) {
+      const parts = displayName.split(',')
+      if (parts.length >= 2) {
+        setField('locationCity', parts[parts.length - 3]?.trim() ?? parts[0].trim())
+      }
+    }
+  }
+
   return (
     <StepCard theme="blue" icon={<MapPin size={28} strokeWidth={1.75} />} badgeLabel="Ubicación">
       <Label>¿Dónde está (o estará) tu negocio?</Label>
-      <Hint>Completar la ciudad es suficiente; el resto es opcional.</Hint>
-      <div className="flex flex-col gap-4 mt-5 mb-2">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>País</FieldLabel>
-            <input className={inputCls('blue')} placeholder="ej. México"
-              value={data.locationCountry ?? ''}
-              onChange={(e) => setField('locationCountry', e.target.value)} />
-          </div>
-          <div>
-            <FieldLabel>Estado</FieldLabel>
-            <input className={inputCls('blue')} placeholder="ej. Baja California"
-              value={data.locationState ?? ''}
-              onChange={(e) => setField('locationState', e.target.value)} />
-          </div>
-        </div>
-        <div>
-          <FieldLabel>Ciudad</FieldLabel>
-          <input className={inputCls('blue')} placeholder="ej. Tijuana"
-            value={data.locationCity ?? ''}
-            onChange={(e) => setField('locationCity', e.target.value)} />
-        </div>
-        <div>
-          <FieldLabel>Fraccionamiento / Zona / Colonia</FieldLabel>
-          <input className={inputCls('blue')} placeholder="ej. Colonia Laurel 1, Zona Río"
-            value={data.locationNeighborhood ?? ''}
-            onChange={(e) => setField('locationNeighborhood', e.target.value)} />
-        </div>
+      <Hint>Completa la ciudad o fija la ubicación en el mapa.</Hint>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mt-4 mb-3 rounded-xl p-1" style={{ background: 'var(--color-surface, #f3f4f6)' }}>
+        {(['texto', 'mapa'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{
+              background: tab === t ? '#ffffff' : 'transparent',
+              color: tab === t ? '#2563eb' : 'var(--color-text-secondary)',
+              boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            {t === 'texto' ? '📝  Dirección' : '🗺️  Mapa'}
+          </button>
+        ))}
       </div>
-      <Nav onBack={onBack} onNext={onNext} canNext={!!data.locationCity} />
+
+      {tab === 'texto' && (
+        <div className="flex flex-col gap-4 mb-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>País</FieldLabel>
+              <input className={inputCls('blue')} placeholder="ej. México"
+                value={data.locationCountry ?? ''}
+                onChange={(e) => setField('locationCountry', e.target.value)} />
+            </div>
+            <div>
+              <FieldLabel>Estado</FieldLabel>
+              <input className={inputCls('blue')} placeholder="ej. Baja California"
+                value={data.locationState ?? ''}
+                onChange={(e) => setField('locationState', e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Ciudad</FieldLabel>
+            <input className={inputCls('blue')} placeholder="ej. Tijuana"
+              value={data.locationCity ?? ''}
+              onChange={(e) => setField('locationCity', e.target.value)} />
+          </div>
+          <div>
+            <FieldLabel>Fraccionamiento / Zona / Colonia</FieldLabel>
+            <input className={inputCls('blue')} placeholder="ej. Colonia Laurel 1, Zona Río"
+              value={data.locationNeighborhood ?? ''}
+              onChange={(e) => setField('locationNeighborhood', e.target.value)} />
+          </div>
+        </div>
+      )}
+
+      {tab === 'mapa' && (
+        <div className="mb-2">
+          <LocationPickerMap
+            lat={data.locationLat}
+            lng={data.locationLng}
+            onPick={handleMapPick}
+          />
+          {data.locationLat != null && (
+            <p className="mt-2 text-xs font-medium" style={{ color: '#2563eb' }}>
+              ✓ Ubicación fijada: {data.locationLat.toFixed(5)}, {data.locationLng?.toFixed(5)}
+            </p>
+          )}
+        </div>
+      )}
+
+      <Nav onBack={onBack} onNext={onNext}
+        canNext={!!data.locationCity || data.locationLat != null} />
     </StepCard>
   )
 }
