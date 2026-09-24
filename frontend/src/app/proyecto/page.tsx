@@ -45,11 +45,10 @@ const SECTIONS = [
     color: '#3b82f6',
     description: 'Entorno, mercado y precios',
     modules: [
-      { key: 'ubicacion'  as ModuleKey, href: '/proyecto/ubicacion', label: 'Zona estratégica', desc: 'Entorno, competencia y zonas de oportunidad', accent: '#3b82f6' },
-      { key: 'demanda'    as ModuleKey, href: '/proyecto/demanda',   label: 'Demanda',           desc: 'Curva oferta-demanda y mercado potencial',    accent: '#10b981' },
-      { key: 'precios'    as ModuleKey, href: '/proyecto/precios',   label: 'Precios',           desc: 'Comparador de precios y estrategia de pricing', accent: '#059669' },
+      { key: 'ubicacion' as ModuleKey, href: '/proyecto/ubicacion', label: 'Zona estratégica',  desc: 'Entorno, competencia y zonas de oportunidad',          accent: '#3b82f6' },
+      { key: 'mercado'   as ModuleKey, href: '/proyecto/mercado',   label: 'Demanda & Precios', desc: 'Mercado potencial, curva de demanda y comparador de precios', accent: '#10b981' },
     ],
-    grid: 'three',
+    grid: 'two',
   },
   {
     id: 'finanzas',

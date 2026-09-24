@@ -21,9 +21,8 @@ const NAV_SECTIONS = [
     name: 'Análisis',
     color: '#3b82f6',
     items: [
-      { href: '/proyecto/ubicacion',  key: 'ubicacion', label: 'Zona estratégica' },
-      { href: '/proyecto/demanda',    key: 'demanda',   label: 'Demanda' },
-      { href: '/proyecto/precios',    key: 'precios',   label: 'Precios' },
+      { href: '/proyecto/ubicacion', key: 'ubicacion', label: 'Zona estratégica' },
+      { href: '/proyecto/mercado',   key: 'mercado',   label: 'Demanda & Precios' },
     ],
   },
   {

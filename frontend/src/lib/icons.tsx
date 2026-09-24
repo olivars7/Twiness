@@ -9,6 +9,7 @@ import {
   Bot,
   ClipboardList,
   Home,
+  ShoppingBag,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -17,20 +18,18 @@ export type ModuleKey =
   | 'mis-datos'
   | 'ubicacion'
   | 'competencia'
-  | 'precios'
-  | 'demanda'
+  | 'mercado'
   | 'simulador'
   | 'tramites'
   | 'agente'
 
 export const MODULE_ICONS: Record<ModuleKey, LucideIcon> = {
-  'home':       Home,
-  'mis-datos':  ClipboardList,
-  'ubicacion':  MapPin,
-  'competencia':Swords,
-  'precios':    DollarSign,
-  'demanda':    TrendingUp,
-  'simulador':  BarChart3,
-  'tramites':   FileText,
-  'agente':     Bot,
+  'home':        Home,
+  'mis-datos':   ClipboardList,
+  'ubicacion':   MapPin,
+  'competencia': Swords,
+  'mercado':     ShoppingBag,
+  'simulador':   BarChart3,
+  'tramites':    FileText,
+  'agente':      Bot,
 }
