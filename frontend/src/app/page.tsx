@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, TrendingUp, DollarSign, BarChart3, Scale, Bot,
   ArrowRight, Sparkles, ChevronRight, Sprout, Store,
-  Coffee, Scissors, ShoppingCart, CheckCircle2, XCircle,
+  Coffee, Scissors, Utensils, Dumbbell, CheckCircle2, XCircle,
 } from 'lucide-react'
 import SquareField from '@/components/ui/SquareField'
 
@@ -40,9 +40,10 @@ const PROFILES = [
 
 // ─── Tipos de negocio ──────────────────────────────────────────────────────────
 const BUSINESS_TYPES = [
-  { icon: Coffee,      label: 'Cafetería',              color: '#f59e0b', desc: 'Café, bebidas y alimentos ligeros' },
-  { icon: Scissors,    label: 'Barbería',                color: '#8b5cf6', desc: 'Corte, estética y cuidado personal' },
-  { icon: ShoppingCart,label: 'Tienda de conveniencia', color: '#10b981', desc: 'Abarrotes, miscelánea y productos básicos' },
+  { icon: Coffee,    label: 'Cafetería',   color: '#f59e0b', emoji: '☕', tagline: 'El aroma que atrae clientes' },
+  { icon: Scissors,  label: 'Barbería',    color: '#8b5cf6', emoji: '✂️', tagline: 'Estilo que fideliza' },
+  { icon: Utensils,  label: 'Restaurante', color: '#ef4444', emoji: '🍽️', tagline: 'Sabor que hace regresar' },
+  { icon: Dumbbell,  label: 'Gimnasio',    color: '#3b82f6', emoji: '💪', tagline: 'Salud que genera comunidad' },
 ]
 
 // ─── Quiz ──────────────────────────────────────────────────────────────────────
@@ -89,7 +90,7 @@ const STEPS = [
 
 const STATS = [
   { value: '6',    label: 'Módulos de análisis' },
-  { value: '< 5m', label: 'Para tu primer análisis' },
+  { value: '< 5min', label: 'Para tu primer análisis' },
   { value: '100%', label: 'Gratis y sin registro' },
 ]
 
@@ -325,70 +326,34 @@ export default function LandingPage() {
                 return (
                   <motion.button
                     key={p.id}
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                    onClick={() => setActiveProfile(active ? null : p.id as 'idea' | 'existing')}
-                    className="flex-1 flex items-start gap-3 px-4 py-3.5 rounded-2xl text-left transition-all"
+                    whileHover={{ scale: 1.04, boxShadow: `0 8px 28px 0 ${active ? p.color : '#0f0f10'}40` }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => router.push('/onboarding')}
+                    className="flex-1 flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-bold text-sm"
                     style={{
-                      background: active ? `${p.color}12` : '#fff',
-                      border: `1.5px solid ${active ? p.color : 'var(--color-border)'}`,
-                      boxShadow: active ? `0 0 0 3px ${p.color}20` : '0 1px 3px 0 rgb(0 0 0 / 0.05)',
+                      background: active ? p.color : '#0f0f10',
+                      color: '#fff',
+                      boxShadow: `0 4px 14px 0 ${active ? p.color : '#0f0f10'}30`,
                     }}
                   >
-                    <span className="mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${p.color}15` }}>
-                      <Icon size={16} style={{ color: p.color }} />
-                    </span>
-                    <div>
-                      <p className="text-sm font-bold" style={{ color: '#0f0f10' }}>{p.title}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{p.desc}</p>
-                    </div>
+                    <Icon size={16} strokeWidth={2.5} />
+                    {p.title}
+                    <ArrowRight size={14} strokeWidth={2.5} className="ml-auto" />
                   </motion.button>
                 )
               })}
             </motion.div>
 
-            {/* CTA row */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
+            {/* Nota sin registro */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.28 }}
-              className="flex flex-wrap items-center gap-3"
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="text-xs"
+              style={{ color: 'var(--color-text-muted)' }}
             >
-              <motion.button
-                whileHover={{ scale: 1.04, boxShadow: '0 8px 28px 0 rgb(15 15 16 / 0.22)' }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => router.push('/onboarding')}
-                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-sm font-bold"
-                style={{ background: '#0f0f10', color: '#fff', boxShadow: '0 4px 14px 0 rgb(15 15 16 / 0.16)' }}
-              >
-                Empezar gratis
-                <ArrowRight size={15} strokeWidth={2.5} />
-              </motion.button>
-
-              <AnimatePresence>
-                {hasProject && (
-                  <motion.button
-                    key="hero-project"
-                    initial={{ opacity: 0, scale: 0.94 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 340, damping: 26, delay: 0.12 }}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => router.push('/proyecto')}
-                    className="flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold"
-                    style={{ background: '#fff', color: '#3b82f6', border: '1px solid #3b82f628', boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06)' }}
-                  >
-                    <Sparkles size={13} strokeWidth={2} />
-                    Continuar con &ldquo;{projectName}&rdquo;
-                  </motion.button>
-                )}
-              </AnimatePresence>
-
-              <p className="w-full text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                Sin registro · Sin tarjeta · 100% gratis
-              </p>
-            </motion.div>
+              Sin registro · Sin tarjeta · 100% gratis
+            </motion.p>
           </div>
 
           {/* ── Right: monitor ── */}
@@ -415,59 +380,6 @@ export default function LandingPage() {
               <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{label}</span>
             </motion.div>
           ))}
-        </div>
-      </section>
-
-      {/* ── FEATURES ────────────────────────────────────────────────────────── */}
-      <section className="px-6 sm:px-12 py-20" style={{ background: '#fafafa' }}>
-        <div className="max-w-5xl mx-auto">
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.4 }}
-            className="mb-12"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Módulos</p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight" style={{ color: '#0f0f10' }}>
-              Todo lo que necesitas<br />para decidir con datos.
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FEATURES.map(({ icon: Icon, color, title, desc }, i) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-30px' }}
-                transition={{ duration: 0.32, delay: i * 0.06 }}
-                whileHover={{ y: -3 }}
-                className="relative overflow-hidden rounded-2xl p-5 flex flex-col gap-3 group"
-                style={{
-                  background: '#fff',
-                  border: '1px solid var(--color-border)',
-                  borderTop: `2.5px solid ${color}`,
-                  boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.05)',
-                  cursor: 'default',
-                }}
-              >
-                {/* Ghost icon */}
-                <div className="absolute bottom-[-8px] right-[-8px] pointer-events-none" aria-hidden>
-                  <Icon size={72} strokeWidth={1} style={{ color, opacity: 0.06 }} />
-                </div>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: `${color}12` }}>
-                  <Icon size={17} strokeWidth={2} style={{ color }} />
-                </div>
-                <div>
-                  <p className="font-bold text-sm mb-1" style={{ color: '#0f0f10' }}>{title}</p>
-                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -514,148 +426,6 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── TIPOS DE NEGOCIO ────────────────────────────────────────────────── */}
-      <section className="px-6 sm:px-12 py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-border)' }}>
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
-            className="mb-10"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>MVP · Tijuana</p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight" style={{ color: '#0f0f10' }}>
-              ¿Qué tipo de negocio<br />quieres analizar?
-            </h2>
-            <p className="text-sm mt-3" style={{ color: 'var(--color-text-secondary)' }}>
-              Selecciona tu giro y empieza el análisis en menos de 5 minutos.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {BUSINESS_TYPES.map(({ icon: Icon, label, color, desc }, i) => (
-              <motion.button
-                key={label}
-                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-20px' }}
-                transition={{ duration: 0.3, delay: i * 0.08 }}
-                whileHover={{ y: -4, boxShadow: `0 12px 32px 0 ${color}22` }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => router.push('/onboarding')}
-                className="flex flex-col items-start gap-4 p-6 rounded-2xl text-left"
-                style={{
-                  background: '#fafafa',
-                  border: `1.5px solid ${color}30`,
-                  borderTop: `3px solid ${color}`,
-                  boxShadow: '0 2px 8px 0 rgb(0 0 0 / 0.04)',
-                  cursor: 'pointer',
-                }}
-              >
-                <span className="w-11 h-11 rounded-2xl flex items-center justify-center"
-                  style={{ background: `${color}15` }}>
-                  <Icon size={22} style={{ color }} />
-                </span>
-                <div>
-                  <p className="font-bold text-base mb-1" style={{ color: '#0f0f10' }}>{label}</p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
-                </div>
-                <span className="text-xs font-semibold flex items-center gap-1" style={{ color }}>
-                  Analizar este negocio <ArrowRight size={12} />
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── QUIZ DE RIESGO ──────────────────────────────────────────────────── */}
-      <section className="px-6 sm:px-12 py-20" style={{ background: '#fafafa', borderTop: '1px solid var(--color-border)' }}>
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
-            className="mb-10 text-center"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#f59e0b' }}>Diagnóstico rápido</p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
-              ¿Qué tan listo estás<br />para abrir tu negocio?
-            </h2>
-            <p className="text-sm mt-3" style={{ color: 'var(--color-text-secondary)' }}>
-              Responde 4 preguntas y descubre qué le falta a tu plan.
-            </p>
-          </motion.div>
-
-          <div className="space-y-3 mb-6">
-            {QUIZ_QUESTIONS.map((q, i) => (
-              <motion.div
-                key={q.id}
-                initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.07 }}
-                className="flex items-center justify-between gap-4 px-5 py-4 rounded-2xl"
-                style={{ background: '#fff', border: '1px solid var(--color-border)' }}
-              >
-                <p className="text-sm font-medium" style={{ color: '#0f0f10' }}>{q.text}</p>
-                <div className="flex gap-2 shrink-0">
-                  {[true, false].map((val) => {
-                    const active = quizAnswers[q.id] === val
-                    return (
-                      <motion.button
-                        key={String(val)}
-                        whileTap={{ scale: 0.93 }}
-                        onClick={() => {
-                          setQuizAnswers(prev => ({ ...prev, [q.id]: val }))
-                          if (Object.keys({ ...quizAnswers, [q.id]: val }).length === QUIZ_QUESTIONS.length) setQuizDone(true)
-                        }}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all"
-                        style={{
-                          background: active ? (val ? '#10b98120' : '#ef444420') : '#f3f4f6',
-                          color: active ? (val ? '#10b981' : '#ef4444') : '#6b7280',
-                          border: `1.5px solid ${active ? (val ? '#10b981' : '#ef4444') : 'transparent'}`,
-                        }}
-                      >
-                        {val ? 'Sí' : 'No'}
-                      </motion.button>
-                    )
-                  })}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <AnimatePresence>
-            {quizReady && (
-              <motion.div
-                initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-                style={{
-                  background: `${quizMessage().color}10`,
-                  border: `1.5px solid ${quizMessage().color}40`,
-                }}
-              >
-                <div className="flex-1">
-                  <p className="text-sm font-bold mb-1" style={{ color: quizMessage().color }}>
-                    {yesCount === 4 ? '🎉' : yesCount >= 2 ? '⚡' : '🚨'} {quizMessage().text}
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                    viabL analiza exactamente los puntos que te faltan — gratis y en minutos.
-                  </p>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => router.push('/onboarding')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shrink-0"
-                  style={{ background: quizMessage().color, color: '#fff' }}
-                >
-                  Empezar análisis <ArrowRight size={14} />
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </section>
 
