@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, TrendingUp, DollarSign, BarChart3, Scale, Bot,
-  ArrowRight, Sparkles, ChevronRight,
+  ArrowRight, Sparkles, ChevronRight, Sprout, Store,
+  Coffee, Scissors, Utensils, Dumbbell, CheckCircle2, XCircle,
 } from 'lucide-react'
 import SquareField from '@/components/ui/SquareField'
 
@@ -16,6 +17,57 @@ function readLS(): Record<string, string> {
   try { return JSON.parse(window.localStorage.getItem(LS_KEY) || '{}') }
   catch { return {} }
 }
+
+// ─── Perfiles ─────────────────────────────────────────────────────────────────
+const PROFILES = [
+  {
+    id: 'idea',
+    icon: Sprout,
+    title: 'Tengo una idea',
+    desc: 'Quiero validar si mi negocio puede funcionar antes de invertir.',
+    color: '#10b981',
+    heroSub: 'Te ayudamos a analizar demanda, competencia y finanzas para saber si tu idea tiene futuro — antes de gastar un peso.',
+  },
+  {
+    id: 'existing',
+    icon: Store,
+    title: 'Ya tengo un negocio',
+    desc: 'Quiero analizar mi operación actual y encontrar áreas de mejora.',
+    color: '#3b82f6',
+    heroSub: 'Analiza el rendimiento actual de tu negocio, detecta riesgos y descubre oportunidades de crecimiento con datos reales.',
+  },
+]
+
+// ─── Tipos de negocio ──────────────────────────────────────────────────────────
+const BUSINESS_TYPES = [
+  { icon: Coffee,    label: 'Cafetería',   color: '#f59e0b', emoji: '☕', tagline: 'El aroma que atrae clientes' },
+  { icon: Scissors,  label: 'Barbería',    color: '#8b5cf6', emoji: '✂️', tagline: 'Estilo que fideliza' },
+  { icon: Utensils,  label: 'Restaurante', color: '#ef4444', emoji: '🍽️', tagline: 'Sabor que hace regresar' },
+  { icon: Dumbbell,  label: 'Gimnasio',    color: '#3b82f6', emoji: '💪', tagline: 'Salud que genera comunidad' },
+]
+
+// ─── Quiz ──────────────────────────────────────────────────────────────────────
+const QUIZ_QUESTIONS = [
+  { id: 'local',       text: '¿Ya elegiste o tienes un local?' },
+  { id: 'capital',     text: '¿Sabes cuánto dinero necesitas invertir?' },
+  { id: 'competition', text: '¿Analizaste a tu competencia cercana?' },
+  { id: 'demand',      text: '¿Estimaste cuántos clientes puede tener tu negocio?' },
+]
+
+// ─── Para quién ────────────────────────────────────────────────────────────────
+const FOR_YOU = [
+  '✅ Quieres validar antes de invertir',
+  '✅ Tienes un presupuesto de hasta $500k MXN',
+  '✅ Tu negocio será en Tijuana, B.C.',
+  '✅ No tienes formación financiera formal',
+  '✅ Quieres datos reales, no suposiciones',
+]
+const NOT_FOR_YOU = [
+  '❌ Ya tienes inversores institucionales',
+  '❌ Buscas financiamiento bancario formal',
+  '❌ Operas fuera de Tijuana (por ahora)',
+  '❌ Necesitas contabilidad oficial o fiscal',
+]
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -38,7 +90,7 @@ const STEPS = [
 
 const STATS = [
   { value: '6',    label: 'Módulos de análisis' },
-  { value: '< 5m', label: 'Para tu primer análisis' },
+  { value: '< 5min', label: 'Para tu primer análisis' },
   { value: '100%', label: 'Gratis y sin registro' },
 ]
 
@@ -109,8 +161,22 @@ function MonitorMockup() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const router = useRouter()
-  const [hasProject, setHasProject] = useState(false)
+  const [hasProject, setHasProject]   = useState(false)
   const [projectName, setProjectName] = useState('')
+  const [activeProfile, setActiveProfile] = useState<'idea' | 'existing' | null>(null)
+  const [quizAnswers, setQuizAnswers]     = useState<Record<string, boolean | null>>({})
+  const [quizDone, setQuizDone]           = useState(false)
+
+  const currentProfile = PROFILES.find(p => p.id === activeProfile)
+  const answeredCount  = Object.values(quizAnswers).filter(v => v !== null).length
+  const yesCount       = Object.values(quizAnswers).filter(v => v === true).length
+  const quizReady      = answeredCount === QUIZ_QUESTIONS.length
+
+  function quizMessage() {
+    if (yesCount === 4) return { text: '¡Excelente! Tienes bases sólidas. viabL te ayudará a afinar los detalles.', color: '#10b981' }
+    if (yesCount >= 2) return { text: `Tienes ${4 - yesCount} área(s) clave por definir. viabL las analiza por ti.`, color: '#f59e0b' }
+    return { text: `Te faltan ${4 - yesCount} puntos críticos antes de abrir. viabL te guía paso a paso.`, color: '#ef4444' }
+  }
 
   useEffect(() => {
     const ls = readLS()
@@ -169,7 +235,7 @@ export default function LandingPage() {
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
       <section
-        className="relative px-6 sm:px-12 pt-20 pb-10 overflow-hidden"
+        className="relative px-6 sm:px-12 pt-24 pb-10 overflow-hidden"
         style={{ background: '#fafafa' }}
       >
         {/* Animated navy squares */}
@@ -233,61 +299,61 @@ export default function LandingPage() {
               {' '}antes de invertir...
             </motion.h1>
 
-            {/* Sub */}
+            {/* Sub — cambia según perfil */}
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
+              key={activeProfile ?? 'default'}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.18 }}
-              className="text-base leading-relaxed mb-10"
+              transition={{ duration: 0.35 }}
+              className="text-base leading-relaxed mb-8"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              Analiza demanda, precios, competencia y finanzas en 6 pasos guiados —
-              con datos reales de Tijuana y asesoría impulsada por{' '}
-              <span className="font-semibold" style={{ color: 'var(--color-text)' }}>watsonx.ai.</span>
+              {currentProfile
+                ? currentProfile.heroSub
+                : 'Analiza demanda, precios, competencia y finanzas en 6 pasos guiados — con datos reales de Tijuana y asesoría impulsada por watsonx.ai.'}
             </motion.p>
 
-            {/* CTA row */}
+            {/* Selector de perfil */}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.28 }}
-              className="flex flex-wrap items-center gap-3"
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="flex flex-col sm:flex-row gap-3 mb-8"
             >
-              <motion.button
-                whileHover={{ scale: 1.04, boxShadow: '0 8px 28px 0 rgb(15 15 16 / 0.22)' }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => router.push('/onboarding')}
-                className="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-sm font-bold"
-                style={{ background: '#0f0f10', color: '#fff', boxShadow: '0 4px 14px 0 rgb(15 15 16 / 0.16)' }}
-              >
-                Empezar gratis
-                <ArrowRight size={15} strokeWidth={2.5} />
-              </motion.button>
-
-              <AnimatePresence>
-                {hasProject && (
+              {PROFILES.map((p) => {
+                const Icon = p.icon
+                const active = activeProfile === p.id
+                return (
                   <motion.button
-                    key="hero-project"
-                    initial={{ opacity: 0, scale: 0.94 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 340, damping: 26, delay: 0.12 }}
-                    whileHover={{ scale: 1.03 }}
+                    key={p.id}
+                    whileHover={{ scale: 1.04, boxShadow: `0 8px 28px 0 ${active ? p.color : '#0f0f10'}40` }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => router.push('/proyecto')}
-                    className="flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold"
-                    style={{ background: '#fff', color: '#3b82f6', border: '1px solid #3b82f628', boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06)' }}
+                    onClick={() => router.push('/onboarding')}
+                    className="flex-1 flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-bold text-sm"
+                    style={{
+                      background: active ? p.color : '#0f0f10',
+                      color: '#fff',
+                      boxShadow: `0 4px 14px 0 ${active ? p.color : '#0f0f10'}30`,
+                    }}
                   >
-                    <Sparkles size={13} strokeWidth={2} />
-                    Continuar con &ldquo;{projectName}&rdquo;
+                    <Icon size={16} strokeWidth={2.5} />
+                    {p.title}
+                    <ArrowRight size={14} strokeWidth={2.5} className="ml-auto" />
                   </motion.button>
-                )}
-              </AnimatePresence>
-
-              <p className="w-full text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                Sin registro · Sin tarjeta · 100% gratis
-              </p>
+                )
+              })}
             </motion.div>
+
+            {/* Nota sin registro */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="text-xs"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              Sin registro · Sin tarjeta · 100% gratis
+            </motion.p>
           </div>
 
           {/* ── Right: monitor ── */}
@@ -314,59 +380,6 @@ export default function LandingPage() {
               <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{label}</span>
             </motion.div>
           ))}
-        </div>
-      </section>
-
-      {/* ── FEATURES ────────────────────────────────────────────────────────── */}
-      <section className="px-6 sm:px-12 py-20" style={{ background: '#fafafa' }}>
-        <div className="max-w-5xl mx-auto">
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.4 }}
-            className="mb-12"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Módulos</p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight" style={{ color: '#0f0f10' }}>
-              Todo lo que necesitas<br />para decidir con datos.
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FEATURES.map(({ icon: Icon, color, title, desc }, i) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-30px' }}
-                transition={{ duration: 0.32, delay: i * 0.06 }}
-                whileHover={{ y: -3 }}
-                className="relative overflow-hidden rounded-2xl p-5 flex flex-col gap-3 group"
-                style={{
-                  background: '#fff',
-                  border: '1px solid var(--color-border)',
-                  borderTop: `2.5px solid ${color}`,
-                  boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.05)',
-                  cursor: 'default',
-                }}
-              >
-                {/* Ghost icon */}
-                <div className="absolute bottom-[-8px] right-[-8px] pointer-events-none" aria-hidden>
-                  <Icon size={72} strokeWidth={1} style={{ color, opacity: 0.06 }} />
-                </div>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: `${color}12` }}>
-                  <Icon size={17} strokeWidth={2} style={{ color }} />
-                </div>
-                <div>
-                  <p className="font-bold text-sm mb-1" style={{ color: '#0f0f10' }}>{title}</p>
-                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -412,6 +425,52 @@ export default function LandingPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PARA QUIÉN ES ───────────────────────────────────────────────────── */}
+      <section className="px-6 sm:px-12 py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-border)' }}>
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.4 }}
+            className="mb-10 text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#6b7280' }}>Transparencia</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
+              ¿viabL es para ti?
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.4 }}
+              className="rounded-2xl p-6 space-y-3"
+              style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0' }}
+            >
+              <p className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#15803d' }}>
+                <CheckCircle2 size={16} /> Sí es para ti si...
+              </p>
+              {FOR_YOU.map((item) => (
+                <p key={item} className="text-sm" style={{ color: '#166534' }}>{item}</p>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.08 }}
+              className="rounded-2xl p-6 space-y-3"
+              style={{ background: '#fef2f2', border: '1.5px solid #fecaca' }}
+            >
+              <p className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#dc2626' }}>
+                <XCircle size={16} /> No es para ti si...
+              </p>
+              {NOT_FOR_YOU.map((item) => (
+                <p key={item} className="text-sm" style={{ color: '#991b1b' }}>{item}</p>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>

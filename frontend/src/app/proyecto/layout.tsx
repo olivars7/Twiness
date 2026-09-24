@@ -30,9 +30,7 @@ const NAV_SECTIONS = [
     name: 'Finanzas',
     color: '#f59e0b',
     items: [
-      { href: '/proyecto/financiero/estado-resultados', key: 'estado-resultados', label: 'Est. Resultados' },
-      { href: '/proyecto/financiero/break-even',        key: 'break-even',        label: 'Pto. Equilibrio' },
-      { href: '/proyecto/escenarios',                   key: 'escenarios',        label: 'Escenarios' },
+      { href: '/proyecto/financiero', key: 'simulador', label: 'Simulador' },
     ],
   },
   {

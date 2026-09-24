@@ -5,8 +5,6 @@ import {
   DollarSign,
   TrendingUp,
   BarChart3,
-  Scale,
-  Sparkles,
   FileText,
   Bot,
   ClipboardList,
@@ -21,22 +19,18 @@ export type ModuleKey =
   | 'competencia'
   | 'precios'
   | 'demanda'
-  | 'estado-resultados'
-  | 'break-even'
-  | 'escenarios'
+  | 'simulador'
   | 'tramites'
   | 'agente'
 
 export const MODULE_ICONS: Record<ModuleKey, LucideIcon> = {
-  'home':              Home,
-  'mis-datos':         ClipboardList,
-  'ubicacion':         MapPin,
-  'competencia':       Swords,
-  'precios':           DollarSign,
-  'demanda':           TrendingUp,
-  'estado-resultados': BarChart3,
-  'break-even':        Scale,
-  'escenarios':        Sparkles,
-  'tramites':          FileText,
-  'agente':            Bot,
+  'home':       Home,
+  'mis-datos':  ClipboardList,
+  'ubicacion':  MapPin,
+  'competencia':Swords,
+  'precios':    DollarSign,
+  'demanda':    TrendingUp,
+  'simulador':  BarChart3,
+  'tramites':   FileText,
+  'agente':     Bot,
 }

@@ -4,10 +4,6 @@ import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ResponsiveContainer, Cell,
-} from 'recharts'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ImprovementCard from '@/components/ui/ImprovementCard'
 import DataBadge from '@/components/ui/DataBadge'
@@ -15,26 +11,14 @@ import InfoTooltip from '@/components/ui/InfoTooltip'
 import { useProjectStore } from '@/store/projectStore'
 import type { CompetitorSnapshot } from '@/types/analysis'
 
-const InteractiveMap = dynamic(() => import('@/components/maps/InteractiveMap'), {
+// Mapa único unificado — cargado en cliente con SSR desactivado
+const UnifiedMap = dynamic(() => import('@/components/maps/UnifiedMap'), {
   ssr: false,
   loading: () => (
-    <div className="rounded-2xl border border-gray-800 bg-gray-900 flex items-center justify-center" style={{ height: 340 }}>
+    <div className="flex items-center justify-center" style={{ height: 500, background: '#000' }}>
       <LoadingSpinner size="lg" />
     </div>
   ),
-})
-
-const HeatmapLayer = dynamic(() => import('@/components/maps/HeatmapLayer'), {
-  ssr: false,
-  loading: () => (
-    <div className="rounded-2xl border border-gray-800 bg-gray-900 flex items-center justify-center" style={{ height: 300 }}>
-      <LoadingSpinner size="lg" />
-    </div>
-  ),
-})
-
-const CompetitorMap = dynamic(() => import('@/components/maps/CompetitorMap'), {
-  ssr: false,
 })
 
 // ═══════════════════════════════════════════════════════════════════
@@ -152,17 +136,16 @@ const ZONES: Zone[] = [
     tooltip: 'Predominio de uso industrial y logístico. La demanda de consumo final es baja. Recomendado solo para negocios B2B o servicios a empresas.',
   },
 ]
-const SORTED_ZONES = [...ZONES].sort((a, b) => b.score - a.score)
 
 const USER_LOCATION = { lat: 32.4701, lng: -116.9742, name: 'Mi negocio (Laurel 1, Tijuana)' }
 
 const ALL_COMPETITORS: CompetitorSnapshot[] = [
-  { id: '1', name: 'Café Baja Blend',   distance: 180,  rating: 4.1, reviewCount: 210, businessType: 'Cafetería', lat: 32.4714, lng: -116.9725, openNow: true,  source: 'google_places' },
-  { id: '2', name: 'Café de Olla TJ',   distance: 320,  rating: 3.7, reviewCount: 74,  businessType: 'Cafetería', lat: 32.4688, lng: -116.9760, openNow: false, source: 'google_places' },
-  { id: '3', name: 'Latte & Co.',        distance: 490,  rating: 4.0, reviewCount: 165, businessType: 'Cafetería', lat: 32.4720, lng: -116.9775, openNow: true,  source: 'google_places' },
-  { id: '4', name: 'Café Frontera',      distance: 650,  rating: 3.5, reviewCount: 41,  businessType: 'Cafetería', lat: 32.4683, lng: -116.9718, openNow: false, source: 'google_places' },
-  { id: '5', name: 'Espresso Tijuana',   distance: 820,  rating: 4.3, reviewCount: 290, businessType: 'Cafetería', lat: 32.4730, lng: -116.9705, openNow: true,  source: 'google_places' },
-  { id: '6', name: 'Starbucks Laureles', distance: 950,  rating: 4.5, reviewCount: 860, businessType: 'Cafetería', lat: 32.4675, lng: -116.9790, openNow: true,  source: 'google_places' },
+  { id: '1', name: 'Café Baja Blend',   distance: 180,  rating: 4.1, reviewCount: 210, businessType: 'Cafetería', lat: 32.4714, lng: -116.9727, openNow: true,  source: 'google_places' },
+  { id: '2', name: 'Café de Olla TJ',   distance: 320,  rating: 3.7, reviewCount: 74,  businessType: 'Cafetería', lat: 32.4680, lng: -116.9761, openNow: false, source: 'google_places' },
+  { id: '3', name: 'Latte & Co.',        distance: 490,  rating: 4.0, reviewCount: 165, businessType: 'Cafetería', lat: 32.4720, lng: -116.9786, openNow: true,  source: 'google_places' },
+  { id: '4', name: 'Café Frontera',      distance: 650,  rating: 3.5, reviewCount: 41,  businessType: 'Cafetería', lat: 32.4643, lng: -116.9742, openNow: false, source: 'google_places' },
+  { id: '5', name: 'Espresso Tijuana',   distance: 820,  rating: 4.3, reviewCount: 290, businessType: 'Cafetería', lat: 32.4775, lng: -116.9742, openNow: true,  source: 'google_places' },
+  { id: '6', name: 'Starbucks Laureles', distance: 950,  rating: 4.5, reviewCount: 860, businessType: 'Cafetería', lat: 32.4701, lng: -116.9640, openNow: true,  source: 'google_places' },
 ]
 
 // ═══════════════════════════════════════════════════════════════════
@@ -257,8 +240,9 @@ export default function ZonaEstrategicaPage() {
   const [pendingLocation, setPendingLocation] = useState<[number, number] | null>(null)
   const [locRadius, setLocRadius] = useState(500)
   const [confirmed, setConfirmed] = useState(false)
-  const [selectedZone, setSelectedZone] = useState<string | null>(null)
   const [compRadio, setCompRadio] = useState<CompRadio>(800)
+  const [showHeatmap, setShowHeatmap] = useState(false)
+  const [showCompetitors, setShowCompetitors] = useState(false)
 
   const handleLocationSelect = (lat: number, lng: number) => { setPendingLocation([lat, lng]); setConfirmed(false) }
   const handleConfirm = () => {
@@ -276,14 +260,9 @@ export default function ZonaEstrategicaPage() {
   const saturation     = calcSaturation(competitors, compRadio)
   const advantages     = detectAdvantages(competitors)
   const satColorHex    = { green: '#4ade80', yellow: '#fbbf24', red: '#f87171' }[saturation.color]
-  const ratingChartData = [
-    ...competitors.map((c) => ({ name: c.name.length > 14 ? c.name.slice(0, 14) + '…' : c.name, rating: c.rating ?? 0, isUser: false })),
-    { name: 'Tu meta', rating: 4.5, isUser: true },
-  ]
 
   const overall     = overallScore()
   const overallInfo = overallLabel(overall)
-  const selected    = ZONES.find((z) => z.name === selectedZone) ?? null
 
   const { alerts, wins } = (() => {
     const alerts: { icon: string; text: string; fix: string; color: string }[] = []
@@ -400,36 +379,6 @@ export default function ZonaEstrategicaPage() {
 
       </div>
 
-      {/* Modos de transporte */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-        className="card rounded-2xl p-5"
-      >
-        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Modos de acceso al local</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-          {([
-            { mode: 'Automóvil',          pct: 55, color: 'bg-blue-500'   },
-            { mode: 'Transporte público', pct: 28, color: 'bg-yellow-500' },
-            { mode: 'Peatonal',           pct: 12, color: 'bg-green-500'  },
-            { mode: 'Bicicleta',          pct: 5,  color: 'bg-purple-500' },
-          ] as const).map(({ mode, pct, color }, i) => (
-            <div key={mode}>
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="text-sm" style={{ color: 'var(--color-text)' }}>{mode}</span>
-                <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{pct}%</span>
-              </div>
-              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
-                <motion.div
-                  initial={{ width: 0 }} animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.65, delay: 0.12 + 0.07 * i }}
-                  className={`h-full rounded-full ${color}`}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
       {/* Alertas + puntos a favor */}
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}
@@ -457,125 +406,111 @@ export default function ZonaEstrategicaPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECCIÓN 2 — MAPA Y ZONAS DE OPORTUNIDAD
+          SECCIÓN 2 — MAPA INTERACTIVO UNIFICADO
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <SectionTitle label="2 · Mapa y zonas de oportunidad" />
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* Mapa interactivo */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}
-          className="card rounded-2xl overflow-hidden"
-        >
-          <div className="px-5 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--color-border)', minHeight: 0 }}>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-text)' }}>Ubicar mi negocio</p>
-              <InfoTooltip text="Haz clic en el mapa para fijar la ubicación exacta del local. El círculo muestra el radio de influencia estimado. La ubicación se guarda en tu proyecto." />
-            </div>
+      {/* Mapa único unificado con toggles — dark mode */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}
+        className="rounded-2xl overflow-hidden"
+        style={{ background: '#0a0a0a', border: '1px solid #1f1f1f' }}
+      >
+        {/* Header oscuro con título, toggles y radio */}
+        <div className="px-5 py-3 flex flex-wrap items-center justify-between gap-3" style={{ borderBottom: '1px solid #1f1f1f' }}>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold shrink-0" style={{ color: '#f4f4f5' }}>Ubicar mi negocio</p>
+            <InfoTooltip text="Haz clic en el mapa para fijar la ubicación exacta. Activa las capas con los botones para ver calor y competidores superpuestos." variant="dark" />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Toggle Mapa de calor */}
+            <button
+              onClick={() => setShowHeatmap((v) => !v)}
+              className="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+              style={showHeatmap
+                ? { background: '#f59e0b', color: '#000' }
+                : { background: '#1f1f1f', color: '#a1a1aa', border: '1px solid #2f2f2f' }
+              }
+            >
+              {showHeatmap ? '🔥 Calor ON' : '🔥 Calor'}
+            </button>
+            {/* Toggle Competidores */}
+            <button
+              onClick={() => setShowCompetitors((v) => !v)}
+              className="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+              style={showCompetitors
+                ? { background: '#ef4444', color: '#fff' }
+                : { background: '#1f1f1f', color: '#a1a1aa', border: '1px solid #2f2f2f' }
+              }
+            >
+              {showCompetitors ? '📍 Competidores ON' : '📍 Competidores'}
+            </button>
+            {/* Separador */}
+            <div className="w-px h-4 shrink-0" style={{ background: '#2f2f2f' }} />
+            {/* Radio de influencia */}
             <div className="flex gap-2">
               {RADIUS_OPTIONS.map((opt) => (
                 <button key={opt.value} onClick={() => setLocRadius(opt.value)}
                   className="px-3 py-1 rounded-full text-xs font-medium transition-colors"
                   style={locRadius === opt.value
-                    ? { background: 'var(--color-accent)', color: 'var(--color-accent-fg)' }
-                    : { background: 'var(--color-input)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }
+                    ? { background: '#3b82f6', color: '#fff' }
+                    : { background: '#1f1f1f', color: '#a1a1aa', border: '1px solid #2f2f2f' }
                   }>
                   {opt.label}
                 </button>
               ))}
             </div>
           </div>
-          <div style={{ padding: 3 }}>
-            <InteractiveMap center={pendingLocation ?? undefined} radius={locRadius} onLocationSelect={handleLocationSelect} />
-          </div>
-          <AnimatePresence>
-            {pendingLocation && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className="px-4 pb-4"
-              >
-                <button onClick={handleConfirm} disabled={confirmed}
-                  className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm transition-colors"
-                  style={confirmed
-                    ? { background: '#d1fae5', color: '#065f46', cursor: 'default' }
-                    : { background: 'var(--color-accent)', color: 'var(--color-accent-fg)' }
-                  }>
-                  {confirmed ? 'Ubicación guardada' : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`}
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Ranking de zonas */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}
-          className="card rounded-2xl p-5 space-y-3"
-        >
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Índice de oportunidad por zona</p>
-              <InfoTooltip text="Ranking de zonas de Tijuana según su potencial para tu tipo de negocio. El índice pondera densidad poblacional, NSE, tráfico y competencia. Fuente: OSM + INEGI." />
-            </div>
-            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>OSM + INEGI</span>
-          </div>
-
-          {SORTED_ZONES.map((z, i) => (
-            <div key={z.name}
-              onClick={() => setSelectedZone(prev => prev === z.name ? null : z.name)}
-                className="cursor-pointer rounded-xl px-3 py-2.5 transition-colors"
-                style={selectedZone === z.name
-                  ? { background: 'var(--color-input)', outline: '1px solid var(--color-border-strong)' }
-                  : {}
-                }
-                onMouseEnter={e => { if (selectedZone !== z.name) (e.currentTarget as HTMLElement).style.background = 'var(--color-card-hover)' }}
-                onMouseLeave={e => { if (selectedZone !== z.name) (e.currentTarget as HTMLElement).style.background = '' }}>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-sm truncate" style={{ color: 'var(--color-text)' }}>{z.name}</span>
-                    <InfoTooltip text={z.tooltip} />
-                  </div>
-                  <span className={`text-xs font-bold shrink-0 ${scoreTextColor(z.score)}`}>{z.score}/100</span>
-                </div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
-                <motion.div initial={{ width: 0 }} animate={{ width: `${z.score}%` }}
-                  transition={{ duration: 0.55, delay: 0.05 * i }}
-                  className={`h-full rounded-full ${z.color}`} />
-              </div>
-            </div>
-          ))}
-
-          <AnimatePresence>
-            {selected && (
-              <motion.div key={selected.name}
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                className="overflow-hidden">
-                <div className="mt-1 rounded-xl p-4" style={{ background: 'var(--color-input)', border: '1px solid var(--color-border)' }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{selected.name} — {selected.score}/100</p>
-                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{selected.detail}</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-      {/* Mapa de calor */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }}
-        className="card rounded-2xl overflow-hidden"
-      >
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Mapa de calor por zona</p>
         </div>
-        <div style={{ padding: 3 }}>
-          <HeatmapLayer selectedZone={selectedZone} zones={ZONES} />
-        </div>
+
+        {/* UN SOLO mapa — capas controladas por props */}
+        <UnifiedMap
+          center={pendingLocation ?? undefined}
+          radius={locRadius}
+          onLocationSelect={handleLocationSelect}
+          showHeatmap={showHeatmap}
+          showCompetitors={showCompetitors}
+          userLocation={USER_LOCATION}
+          competitors={competitors}
+          radioMeters={compRadio}
+        />
+
+        {/* Leyenda competidores (solo si capa activa) */}
+        {showCompetitors && (
+          <div className="px-5 py-2 flex items-center gap-4 text-xs" style={{ color: '#71717a', borderTop: '1px solid #1f1f1f' }}>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={12} strokeWidth={2.5} style={{ color: '#3b82f6' }} />
+              Tu negocio
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={12} strokeWidth={2.5} style={{ color: '#ef4444' }} />
+              Competencia
+            </span>
+          </div>
+        )}
+
+        {/* Botón de confirmar ubicación */}
+        <AnimatePresence>
+          {pendingLocation && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="px-4 pb-4"
+              style={{ background: '#0a0a0a' }}
+            >
+              <button onClick={handleConfirm} disabled={confirmed}
+                className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                style={confirmed
+                  ? { background: '#052e16', color: '#4ade80', cursor: 'default' }
+                  : { background: '#3b82f6', color: '#fff' }
+                }>
+                {confirmed ? '✓ Ubicación guardada' : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -660,94 +595,35 @@ export default function ZonaEstrategicaPage() {
         </div>
       </motion.div>
 
-      {/* Saturación + gráfica de ratings en fila */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* Índice de saturación */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.27 }}
-          className="card rounded-2xl p-5 space-y-4"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Índice de saturación</p>
-              <InfoTooltip text="Mide cuántos negocios del mismo tipo hay por km² dentro del radio. Fórmula: N ÷ (π × r²). <2 neg/km² = baja competencia; >5 = mercado saturado." />
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-2xl font-black" style={{ color: satColorHex }}>{saturation.density}</span>
-              <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>neg/km²</span>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: satColorHex }}>{saturation.label}</p>
-            </div>
-          </div>
-          <div className="relative w-full h-3 rounded-full">
-            <div className="absolute inset-0 rounded-full"
-              style={{ background: 'linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%)' }} />
-            <motion.div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 shadow-lg z-10"
-              style={{ borderColor: satColorHex }}
-              initial={{ left: '0%' }} animate={{ left: `calc(${saturation.pct}% - 8px)` }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25 }} />
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-emerald-600">Baja &lt; 2</span>
-            <span className="text-amber-600">Media 2–5</span>
-            <span className="text-red-600">Alta &gt; 5</span>
-          </div>
-        </motion.div>
-
-        {/* Gráfica de ratings */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.29 }}
-          className="card rounded-2xl p-5"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Comparación de ratings</p>
-            <InfoTooltip text="Ratings de Google Places de cada competidor. La barra negra es tu meta (4.5★). La línea punteada marca 4.0★ — umbral mínimo para no perder clientes por calificación." />
-            <span className="text-xs ml-auto" style={{ color: 'var(--color-text)' }}>◼ Tu meta</span>
-            <span className="text-xs text-amber-600">◼ Competencia</span>
-          </div>
-          <ResponsiveContainer width="100%" height={Math.max(150, ratingChartData.length * 36)}>
-            <BarChart data={ratingChartData} layout="vertical" margin={{ left: 4, right: 36, top: 4, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-              <XAxis type="number" domain={[0, 5]} tickCount={6} tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} axisLine={{ stroke: 'var(--color-border)' }} tickLine={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} width={110} axisLine={false} tickLine={false} />
-              <Tooltip cursor={{ fill: 'var(--color-card-hover)' }}
-                contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '4px 10px', fontSize: 11, color: 'var(--color-text)' }}
-                formatter={(v, _n, props) => {
-                  const color = props.payload?.isUser ? 'var(--color-text)' : '#f59e0b'
-                  return [<span key="v" style={{ color, fontWeight: 700 }}>{`${v} ★`}</span>, '']
-                }} />
-              <ReferenceLine x={4} stroke="var(--color-border-strong)" strokeDasharray="4 4"
-                label={{ value: '4.0★', fontSize: 10, fill: 'var(--color-text-muted)', position: 'right' }} />
-              <Bar dataKey="rating" radius={[0, 6, 6, 0]}>
-                {ratingChartData.map((entry, i) => <Cell key={i} fill={entry.isUser ? 'var(--color-text)' : '#f59e0b'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-      </div>
-
-      {/* Mapa de competidores */}
+      {/* Índice de saturación — ocupa ancho completo sin la gráfica de ratings */}
       <motion.div
-        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}
-        className="rounded-2xl overflow-hidden"
-        style={{ background: '#000', border: '1px solid #1f1f1f' }}
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.27 }}
+        className="card rounded-2xl p-5 space-y-4"
       >
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #1f1f1f' }}>
-          <p className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>Mapa de competidores</p>
-          <div className="flex items-center gap-4 text-xs" style={{ color: '#71717a' }}>
-            <span className="flex items-center gap-1.5">
-              <MapPin size={12} strokeWidth={2.5} style={{ color: '#3b82f6' }} />
-              Tu negocio
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin size={12} strokeWidth={2.5} style={{ color: '#ef4444' }} />
-              Competencia
-            </span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Índice de saturación</p>
+            <InfoTooltip text="Mide cuántos negocios del mismo tipo hay por km² dentro del radio. Fórmula: N ÷ (π × r²). <2 neg/km² = baja competencia; >5 = mercado saturado." />
+          </div>
+          <div className="text-right shrink-0">
+            <span className="text-2xl font-black" style={{ color: satColorHex }}>{saturation.density}</span>
+            <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>neg/km²</span>
+            <p className="text-xs font-semibold mt-0.5" style={{ color: satColorHex }}>{saturation.label}</p>
           </div>
         </div>
-        <div style={{ padding: 3 }}>
-          <CompetitorMap userLocation={USER_LOCATION} competitors={competitors} radioMeters={compRadio} />
+        <div className="relative w-full h-3 rounded-full">
+          <div className="absolute inset-0 rounded-full"
+            style={{ background: 'linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%)' }} />
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 shadow-lg z-10"
+            style={{ borderColor: satColorHex }}
+            initial={{ left: '0%' }} animate={{ left: `calc(${saturation.pct}% - 8px)` }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }} />
+        </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-emerald-600">Baja &lt; 2</span>
+          <span className="text-amber-600">Media 2–5</span>
+          <span className="text-red-600">Alta &gt; 5</span>
         </div>
       </motion.div>
 
