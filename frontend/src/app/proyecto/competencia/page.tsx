@@ -60,17 +60,18 @@ function InfoTooltip({ text }: { text: string }) {
 }
 
 // ─── Datos ───────────────────────────────────────────────────────────────────
-const USER_LOCATION = { lat: 20.6597, lng: -100.4270, name: 'Mi Cafetería (El Refugio)' }
+// Colonia Laurel 1, Tijuana, B.C.
+const USER_LOCATION = { lat: 32.4701, lng: -116.9742, name: 'Mi Cafetería (Laurel 1, Tijuana)' }
 const RADIOS = [250, 500, 800, 1000] as const
 type Radio = typeof RADIOS[number]
 
 const ALL_COMPETITORS: CompetitorSnapshot[] = [
-  { id: '1', name: 'Café Punta del Cielo', distance: 180,  rating: 4.1, reviewCount: 430,  businessType: 'Cafetería', lat: 20.6610, lng: -100.4255, openNow: true,  source: 'google_places' },
-  { id: '2', name: 'Starbucks Refugio',    distance: 320,  rating: 4.4, reviewCount: 1820, businessType: 'Cafetería', lat: 20.6582, lng: -100.4290, openNow: true,  source: 'google_places' },
-  { id: '3', name: 'Café Mundano',         distance: 490,  rating: 3.7, reviewCount:  88,  businessType: 'Cafetería', lat: 20.6618, lng: -100.4300, openNow: false, source: 'google_places' },
-  { id: '4', name: 'Oh! Café',             distance: 650,  rating: 4.0, reviewCount: 215,  businessType: 'Cafetería', lat: 20.6575, lng: -100.4245, openNow: true,  source: 'google_places' },
-  { id: '5', name: 'Café Vienés',          distance: 820,  rating: 3.5, reviewCount:  52,  businessType: 'Cafetería', lat: 20.6630, lng: -100.4260, openNow: false, source: 'google_places' },
-  { id: '6', name: 'Negro Café',           distance: 950,  rating: 4.3, reviewCount: 340,  businessType: 'Cafetería', lat: 20.6560, lng: -100.4310, openNow: true,  source: 'google_places' },
+  { id: '1', name: 'Café Baja Blend',   distance: 180,  rating: 4.1, reviewCount: 210,  businessType: 'Cafetería', lat: 32.4714, lng: -116.9725, openNow: true,  source: 'google_places' },
+  { id: '2', name: 'Café de Olla TJ',   distance: 320,  rating: 3.7, reviewCount:  74,  businessType: 'Cafetería', lat: 32.4688, lng: -116.9760, openNow: false, source: 'google_places' },
+  { id: '3', name: 'Latte & Co.',       distance: 490,  rating: 4.0, reviewCount: 165,  businessType: 'Cafetería', lat: 32.4720, lng: -116.9775, openNow: true,  source: 'google_places' },
+  { id: '4', name: 'Café Frontera',     distance: 650,  rating: 3.5, reviewCount:  41,  businessType: 'Cafetería', lat: 32.4683, lng: -116.9718, openNow: false, source: 'google_places' },
+  { id: '5', name: 'Espresso Tijuana',  distance: 820,  rating: 4.3, reviewCount: 290,  businessType: 'Cafetería', lat: 32.4730, lng: -116.9705, openNow: true,  source: 'google_places' },
+  { id: '6', name: 'Starbucks Laureles',distance: 950,  rating: 4.5, reviewCount: 860,  businessType: 'Cafetería', lat: 32.4675, lng: -116.9790, openNow: true,  source: 'google_places' },
 ]
 
 // ─── Saturación ───────────────────────────────────────────────────────────────
@@ -157,7 +158,7 @@ export default function CompetenciaPage() {
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-slate-100">⚔️ Análisis de Competencia</h1>
-            <p className="text-slate-400 text-sm mt-1">Cafetería · El Refugio, Querétaro</p>
+            <p className="text-slate-400 text-sm mt-1">Cafetería · Col. Laurel 1, Tijuana B.C.</p>
           </div>
           <DataBadge type="dato" label="Google Places" />
         </motion.div>
