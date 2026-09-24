@@ -121,7 +121,7 @@ export default function LandingPage() {
     <main className="flex flex-col overflow-x-hidden" style={{ background: '#fafafa', color: 'var(--color-text)' }}>
 
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 flex justify-center px-4 pt-3 pointer-events-none">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 pointer-events-none">
       <nav
         className="w-full max-w-5xl flex items-center justify-between px-5 py-3 pointer-events-auto"
         style={{
@@ -219,7 +219,7 @@ export default function LandingPage() {
               className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.04] tracking-tight mb-6"
               style={{ color: '#0f0f10' }}
             >
-              Sabe si tu negocio{' '}
+              Asegúrate que tu negocio{' '}
               <span
                 style={{
                   color: '#3b82f6',
@@ -228,9 +228,9 @@ export default function LandingPage() {
                   textUnderlineOffset: '6px',
                 }}
               >
-                es viable
+                sea viable
               </span>
-              {' '}antes de invertir.
+              {' '}antes de invertir...
             </motion.h1>
 
             {/* Sub */}
