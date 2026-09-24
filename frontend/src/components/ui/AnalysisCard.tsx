@@ -13,11 +13,11 @@ interface AnalysisCardProps {
   onShowDetails?: () => void
 }
 
-const colorMap: Record<CardColor, { border: string; bg: string; badge: string; label: string }> = {
-  green:  { border: 'border-green-400',  bg: 'bg-green-50',  badge: 'bg-green-100 text-green-800',  label: 'Oportunidad' },
-  yellow: { border: 'border-yellow-400', bg: 'bg-yellow-50', badge: 'bg-yellow-100 text-yellow-800', label: 'Precaución' },
-  red:    { border: 'border-red-400',    bg: 'bg-red-50',    badge: 'bg-red-100 text-red-800',       label: 'Riesgo' },
-  blue:   { border: 'border-blue-400',   bg: 'bg-blue-50',   badge: 'bg-blue-100 text-blue-800',     label: 'Sugerencia' },
+const colorMap: Record<CardColor, { accent: string; badge: string; label: string }> = {
+  green:  { accent: '#10b981', badge: 'bg-emerald-50 text-emerald-700',  label: 'Oportunidad' },
+  yellow: { accent: '#f59e0b', badge: 'bg-amber-50 text-amber-700',      label: 'Precaución'  },
+  red:    { accent: '#ef4444', badge: 'bg-red-50 text-red-700',          label: 'Riesgo'      },
+  blue:   { accent: '#3b82f6', badge: 'bg-blue-50 text-blue-700',        label: 'Sugerencia'  },
 }
 
 export default function AnalysisCard({ color, title, value, description, children, onShowDetails }: AnalysisCardProps) {
@@ -29,21 +29,23 @@ export default function AnalysisCard({ color, title, value, description, childre
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       whileHover={{ scale: 1.02 }}
-      className={`rounded-2xl border-l-4 p-5 ${styles.border} ${styles.bg} shadow-sm`}
+      className="card rounded-2xl p-5"
+      style={{ borderLeft: `4px solid ${styles.accent}` }}
     >
       <div className="flex items-start justify-between mb-2">
-        <h3 className="font-semibold text-gray-800">{title}</h3>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>{title}</h3>
         <span className={`text-xs px-2 py-1 rounded-full font-medium ${styles.badge}`}>
           {styles.label}
         </span>
       </div>
-      <p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
-      <p className="text-sm text-gray-600">{description}</p>
+      <p className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text)' }}>{value}</p>
+      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{description}</p>
       {children}
       {onShowDetails && (
         <button
           onClick={onShowDetails}
-          className="mt-3 text-sm text-gray-500 hover:text-gray-800 underline"
+          className="mt-3 text-sm underline"
+          style={{ color: 'var(--color-text-muted)' }}
         >
           Mostrar detalles
         </button>
