@@ -1,0 +1,10 @@
+# Forzar LF y encoding UTF-8 en todos los archivos de texto
+* text=auto eol=lf
+
+# Frontend
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.mjs  text eol=lf
+*.md   text eol=lf

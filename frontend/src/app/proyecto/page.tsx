@@ -76,7 +76,7 @@ const SECTIONS = [
   },
 ]
 
-// ─── Module card with ghost background icon ────────────────────────────────────
+// ─── Module card ───────────────────────────────────────────────────────────────
 function ModuleCard({ mod, delay }: { mod: Module; delay: number }) {
   const Icon = MODULE_ICONS[mod.key]
   return (
@@ -84,69 +84,50 @@ function ModuleCard({ mod, delay }: { mod: Module; delay: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3, ease: 'easeOut' }}
-      whileHover={{ y: -3, scale: 1.015 }}
-      whileTap={{ scale: 0.97 }}
       className="h-full"
     >
       <Link
         href={mod.href}
-        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl h-full card"
-        style={{
-          minHeight: 130,
-          borderTop: `2px solid ${mod.accent}`,
-          boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.07)',
-        }}
+        className="group flex flex-col justify-between rounded-2xl h-full card"
+        style={{ minHeight: 130 }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement
-          el.style.boxShadow = `0 6px 24px 0 ${mod.accent}22`
           el.style.background = 'var(--color-card-hover)'
+          el.style.borderColor = 'var(--color-border-strong)'
         }}
         onMouseLeave={e => {
           const el = e.currentTarget as HTMLElement
-          el.style.boxShadow = '0 1px 4px 0 rgb(0 0 0 / 0.07)'
           el.style.background = 'var(--color-card)'
+          el.style.borderColor = 'var(--color-border)'
         }}
       >
-        {/* Ghost icon — large, clipped, bottom-right */}
-        <div
-          className="absolute bottom-[-14px] right-[-14px] pointer-events-none select-none"
-          aria-hidden
-        >
-          <Icon
-            size={80}
-            strokeWidth={1.2}
-            style={{ color: '#9ca3af', opacity: 0.13 }}
-          />
-        </div>
-
         {/* Card content */}
-        <div className="relative z-10 p-4 flex flex-col gap-2.5">
-          {/* Small colored icon */}
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: `${mod.accent}16` }}
-          >
-            <Icon size={16} strokeWidth={2} style={{ color: mod.accent }} />
-          </div>
+        <div className="p-4 flex flex-col gap-3">
+          {/* Icon — bare, no tinted box */}
+          <Icon size={18} strokeWidth={1.75} style={{ color: mod.accent }} />
 
           {/* Text */}
           <div>
-            <p className="text-sm font-bold leading-tight" style={{ color: 'var(--color-text)' }}>
+            <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--color-text)' }}>
               {mod.label}
             </p>
-            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
               {mod.desc}
             </p>
           </div>
         </div>
 
-        {/* Arrow on hover */}
-        <div className="relative z-10 px-4 pb-3 flex justify-end">
+        {/* Footer — accent dot + arrow */}
+        <div className="px-4 pb-3.5 flex items-center justify-between">
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: mod.accent }}
+          />
           <ArrowRight
-            size={13}
-            strokeWidth={2.2}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ color: mod.accent }}
+            size={12}
+            strokeWidth={2}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            style={{ color: 'var(--color-text-muted)' }}
           />
         </div>
       </Link>
@@ -155,86 +136,23 @@ function ModuleCard({ mod, delay }: { mod: Module; delay: number }) {
 }
 
 // ─── Section divider label ─────────────────────────────────────────────────────
-function SectionHeader({ label, color, description, delay }: {
+function SectionHeader({ label, color, description: _description, delay }: {
   label: string; color: string; description: string; delay: number
 }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay, duration: 0.3 }}
+      transition={{ delay, duration: 0.25 }}
       className="flex items-center gap-3 mb-3"
     >
-      <div className="h-px flex-1" style={{ background: `${color}28` }} />
-      <div className="flex items-center gap-2">
-        <span
-          className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
-          style={{ background: `${color}14`, color, border: `1px solid ${color}28` }}
-        >
-          {label}
-        </span>
-        <span className="text-xs hidden sm:block" style={{ color: '#9ca3af' }}>{description}</span>
-      </div>
-      <div className="h-px flex-1" style={{ background: `${color}28` }} />
-    </motion.div>
-  )
-}
-
-// ─── Gestión strip card (simpler, horizontal) ─────────────────────────────────
-function GestionCard({ mod, delay }: { mod: Module; delay: number }) {
-  const Icon = MODULE_ICONS[mod.key]
-  const isAgent = mod.key === 'agente'
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.28 }}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <Link
-        href={mod.href}
-        className="group relative flex items-center gap-3 px-4 py-3.5 rounded-2xl overflow-hidden card"
-        style={{
-          borderLeft: `3px solid ${mod.accent}`,
-          boxShadow: '0 1px 4px 0 rgb(0 0 0 / 0.06)',
-          ...(isAgent ? { background: '#7c3aed08', border: `1px solid #7c3aed22`, borderLeft: `3px solid #7c3aed` } : {}),
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = isAgent ? '#7c3aed12' : 'var(--color-card-hover)'
-          el.style.boxShadow = `0 4px 16px 0 ${mod.accent}18`
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = isAgent ? '#7c3aed08' : 'var(--color-card)'
-          el.style.boxShadow = '0 1px 4px 0 rgb(0 0 0 / 0.06)'
-        }}
+      <span
+        className="text-[9px] font-bold uppercase tracking-[0.14em] shrink-0"
+        style={{ color }}
       >
-        {/* Ghost icon */}
-        <div className="absolute right-[-8px] top-[-8px] pointer-events-none" aria-hidden>
-          <Icon size={56} strokeWidth={1.2} style={{ color: '#9ca3af', opacity: 0.10 }} />
-        </div>
-
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: `${mod.accent}18` }}
-        >
-          <Icon size={15} strokeWidth={2.1} style={{ color: mod.accent }} />
-        </div>
-
-        <div className="flex-1 min-w-0 relative z-10">
-          <p className="text-sm font-bold truncate" style={{ color: 'var(--color-text)' }}>{mod.label}</p>
-          <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>{mod.desc}</p>
-        </div>
-
-        <ArrowRight
-          size={13}
-          strokeWidth={2.2}
-          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: mod.accent }}
-        />
-      </Link>
+        {label}
+      </span>
+      <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
     </motion.div>
   )
 }
@@ -323,11 +241,11 @@ export default function ProyectoHubPage() {
               </div>
             )}
 
-            {/* Gestión — 2 horizontal strip cards */}
+            {/* Gestión — 2-column grid, same ModuleCard */}
             {section.grid === 'two' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {section.modules.map((mod, i) => (
-                  <GestionCard key={mod.href} mod={mod} delay={baseDelay + 0.05 + i * 0.04} />
+                  <ModuleCard key={mod.href} mod={mod} delay={baseDelay + 0.05 + i * 0.04} />
                 ))}
               </div>
             )}

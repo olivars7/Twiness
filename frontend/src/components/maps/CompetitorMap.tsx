@@ -43,8 +43,8 @@ export default function CompetitorMap({ userLocation, competitors, radioMeters }
   const center: [number, number] = [userLocation.lat, userLocation.lng]
 
   return (
-    <div style={{ height: '380px', position: 'relative', zIndex: 0 }}>
-      <MapContainer center={center} zoom={15} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+    <div style={{ height: '380px', position: 'relative', zIndex: 0, borderRadius: '0 0 1rem 1rem', overflow: 'hidden' }}>
+      <MapContainer center={center} zoom={15} style={{ height: '100%', width: '100%', zIndex: 0, borderRadius: 'inherit' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

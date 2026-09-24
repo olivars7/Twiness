@@ -121,9 +121,17 @@ export default function LandingPage() {
     <main className="flex flex-col overflow-x-hidden" style={{ background: '#fafafa', color: 'var(--color-text)' }}>
 
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 flex justify-center px-4 pt-3 pointer-events-none">
       <nav
-        className="sticky top-0 z-30 flex items-center justify-between px-6 sm:px-12 py-4"
-        style={{ background: 'rgba(250,250,250,0.9)', backdropFilter: 'blur(14px)', borderBottom: '1px solid var(--color-border)' }}
+        className="w-full max-w-5xl flex items-center justify-between px-5 py-3 pointer-events-auto"
+        style={{
+          background: 'rgba(250,250,250,0.75)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: '1rem',
+          boxShadow: '0 4px 24px 0 rgb(0 0 0 / 0.07), 0 1px 2px 0 rgb(0 0 0 / 0.04)',
+        }}
       >
         <div className="flex items-center gap-3">
           <img src="/logoBasico.png" alt="viabL" className="h-10 w-auto" />
@@ -157,6 +165,7 @@ export default function LandingPage() {
           </motion.button>
         </div>
       </nav>
+      </div>
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
       <section

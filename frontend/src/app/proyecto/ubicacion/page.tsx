@@ -1,9 +1,9 @@
-﻿'use client'
+'use client'
 
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, Cell,
@@ -11,6 +11,7 @@ import {
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import ImprovementCard from '@/components/ui/ImprovementCard'
 import DataBadge from '@/components/ui/DataBadge'
+import InfoTooltip from '@/components/ui/InfoTooltip'
 import { useProjectStore } from '@/store/projectStore'
 import type { CompetitorSnapshot } from '@/types/analysis'
 
@@ -36,9 +37,9 @@ const CompetitorMap = dynamic(() => import('@/components/maps/CompetitorMap'), {
   ssr: false,
 })
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 // DATOS MOCK
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 
 const RADIUS_OPTIONS = [
   { label: '250 m', value: 250 },
@@ -52,103 +53,103 @@ type CompRadio = (typeof COMP_RADIOS)[number]
 interface Factor { label: string; score: number; tooltip: string }
 const FACTORS: Factor[] = [
   {
-    label: 'Tr├ífico peatonal',
+    label: 'Tráfico peatonal',
     score: 72,
-    tooltip: 'N├║mero estimado de personas que pasan frente al local por hora seg├║n datos de movilidad OSM. ΓëÑ70 = favorable para negocios de alta frecuencia.',
+    tooltip: 'Número estimado de personas que pasan frente al local por hora según datos de movilidad OSM. ≥70 = favorable para negocios de alta frecuencia.',
   },
   {
     label: 'Acceso vehicular',
     score: 85,
-    tooltip: 'Eval├║a disponibilidad de estacionamiento, facilidad de acceso desde avenidas principales y se├▒alizaci├│n. ΓëÑ70 = buenas condiciones de acceso.',
+    tooltip: 'Evalúa disponibilidad de estacionamiento, facilidad de acceso desde avenidas principales y señalización. ≥70 = buenas condiciones de acceso.',
   },
   {
     label: 'Competidores cercanos',
     score: 48,
-    tooltip: 'Inverso de saturaci├│n: a m├ís competidores en el radio, menor puntuaci├│n. <50 = alta competencia, recomendado diferenciarse claramente.',
+    tooltip: 'Inverso de saturación: a más competidores en el radio, menor puntuación. <50 = alta competencia, recomendado diferenciarse claramente.',
   },
   {
-    label: 'Nivel socioecon├│mico',
+    label: 'Nivel socioeconómico',
     score: 66,
-    tooltip: 'NSE promedio de los hogares en radio 800 m seg├║n INEGI. ΓëÑ70 = NSE C+/AB con mayor capacidad de gasto discrecional.',
+    tooltip: 'NSE promedio de los hogares en radio 800 m según INEGI. ≥70 = NSE C+/AB con mayor capacidad de gasto discrecional.',
   },
 ]
 
 interface SafetyFactor { label: string; level: 'bajo' | 'medio' | 'alto'; detail: string; tooltip: string }
 const SAFETY_FACTORS: SafetyFactor[] = [
   {
-    label: 'Seguridad p├║blica',
+    label: 'Seguridad pública',
     level: 'medio',
-    detail: 'Zona con incidentes moderados. Recomendado: c├ímara y cerradura reforzada.',
-    tooltip: '├ìndice basado en reportes del C4 Tijuana y datos de SESNSP. "Precauci├│n" = entre 3 y 8 incidentes mensuales promedio en un radio de 500 m.',
+    detail: 'Zona con incidentes moderados. Recomendado: cámara y cerradura reforzada.',
+    tooltip: 'Índice basado en reportes del C4 Tijuana y datos de SESNSP. "Precaución" = entre 3 y 8 incidentes mensuales promedio en un radio de 500 m.',
   },
   {
-    label: 'Alumbrado p├║blico',
+    label: 'Alumbrado público',
     level: 'alto',
     detail: 'Calle bien iluminada, reduce riesgo nocturno.',
-    tooltip: 'Porcentaje de luminarias funcionales en el tramo frente al local seg├║n OOMAPAS. "Favorable" = >85 % de luminarias operativas.',
+    tooltip: 'Porcentaje de luminarias funcionales en el tramo frente al local según OOMAPAS. "Favorable" = >85 % de luminarias operativas.',
   },
   {
     label: 'Infraestructura vial',
     level: 'alto',
     detail: 'Banquetas y calles en buen estado.',
-    tooltip: 'Condici├│n de banquetas, pavimento y accesos medida por el ├¡ndice de calidad vial del Municipio de Tijuana. "Favorable" = sin baches ni obst├ículos en la acera.',
+    tooltip: 'Condición de banquetas, pavimento y accesos medida por el índice de calidad vial del Municipio de Tijuana. "Favorable" = sin baches ni obstáculos en la acera.',
   },
   {
-    label: 'Riesgo de inundaci├│n',
+    label: 'Riesgo de inundación',
     level: 'bajo',
-    detail: 'Alto riesgo en temporada de lluvias (Protecci├│n Civil TJ).',
-    tooltip: 'Clasificaci├│n de riesgo h├¡drico de CENAPRED y Protecci├│n Civil Tijuana. "Riesgo" = zona en ca├▒ada o depresi├│n topogr├ífica sujeta a escurrimientos en lluvia.',
+    detail: 'Alto riesgo en temporada de lluvias (Protección Civil TJ).',
+    tooltip: 'Clasificación de riesgo hídrico de CENAPRED y Protección Civil Tijuana. "Riesgo" = zona en cañada o depresión topográfica sujeta a escurrimientos en lluvia.',
   },
   {
     label: 'Servicios de emergencia',
     level: 'alto',
     detail: 'Cruz Roja y hospital a <2 km. Tiempo de respuesta ~8 min.',
-    tooltip: 'Distancia al centro de salud, estaci├│n de bomberos y Cruz Roja m├ís cercanos. Tiempo de respuesta estimado basado en trayecto vehicular en hora valle.',
+    tooltip: 'Distancia al centro de salud, estación de bomberos y Cruz Roja más cercanos. Tiempo de respuesta estimado basado en trayecto vehicular en hora valle.',
   },
   {
-    label: 'Suministro el├⌐ctrico',
+    label: 'Suministro eléctrico',
     level: 'alto',
     detail: 'Red estable. Historial bajo de apagones.',
-    tooltip: 'Frecuencia de interrupciones de servicio de CFE en la colonia durante los ├║ltimos 12 meses. "Favorable" = menos de 2 interrupciones >30 min por mes.',
+    tooltip: 'Frecuencia de interrupciones de servicio de CFE en la colonia durante los últimos 12 meses. "Favorable" = menos de 2 interrupciones >30 min por mes.',
   },
 ]
 
 interface Zone { name: string; score: number; color: string; detail: string; coords: [number, number]; tooltip: string }
 const ZONES: Zone[] = [
   {
-    name: 'Zona R├¡o',
+    name: 'Zona Río',
     score: 82, color: 'bg-green-500',
     coords: [32.5309, -117.0189],
     detail: 'Alta densidad comercial, NSE medio-alto, flujo vehicular constante.',
-    tooltip: '├ìndice calculado ponderando densidad poblacional (30 %), NSE (25 %), tr├ífico vehicular (25 %) y disponibilidad de locales (20 %) seg├║n OSM e INEGI.',
+    tooltip: 'Índice calculado ponderando densidad poblacional (30 %), NSE (25 %), tráfico vehicular (25 %) y disponibilidad de locales (20 %) según OSM e INEGI.',
   },
   {
-    name: 'Centro Hist├│rico',
+    name: 'Centro Histórico',
     score: 68, color: 'bg-yellow-500',
     coords: [32.5320, -117.0382],
-    detail: 'Tr├ífico peatonal elevado pero alta competencia. NSE mixto.',
-    tooltip: 'Zona con fuerte componente tur├¡stico y comercio tradicional. Alta competencia baja el ├¡ndice pese al tr├ínsito peatonal elevado.',
+    detail: 'Tráfico peatonal elevado pero alta competencia. NSE mixto.',
+    tooltip: 'Zona con fuerte componente turístico y comercio tradicional. Alta competencia baja el índice pese al tránsito peatonal elevado.',
   },
   {
     name: 'La Mesa',
     score: 61, color: 'bg-yellow-500',
     coords: [32.5000, -116.9600],
-    detail: 'Zona residencial consolidada. Clientela leal, menos tr├ífico de paso.',
-    tooltip: 'Zona madura con base de clientes estable pero crecimiento limitado. Menor tr├ífico de paso reduce la visibilidad para negocios nuevos.',
+    detail: 'Zona residencial consolidada. Clientela leal, menos tráfico de paso.',
+    tooltip: 'Zona madura con base de clientes estable pero crecimiento limitado. Menor tráfico de paso reduce la visibilidad para negocios nuevos.',
   },
   {
     name: 'Playas',
     score: 54, color: 'bg-yellow-500',
     coords: [32.5089, -117.1200],
     detail: 'Demanda estacional alta en verano, cae fuera de temporada.',
-    tooltip: 'Fuerte estacionalidad tur├¡stica: ├¡ndice en temporada alta puede superar 75, pero cae a ~35 en invierno. Riesgoso para flujos de caja constantes.',
+    tooltip: 'Fuerte estacionalidad turística: índice en temporada alta puede superar 75, pero cae a ~35 en invierno. Riesgoso para flujos de caja constantes.',
   },
   {
     name: 'Otay',
     score: 45, color: 'bg-red-500',
     coords: [32.5424, -116.9750],
     detail: 'Zona industrial. Baja densidad residencial y poca afluencia.',
-    tooltip: 'Predominio de uso industrial y log├¡stico. La demanda de consumo final es baja. Recomendado solo para negocios B2B o servicios a empresas.',
+    tooltip: 'Predominio de uso industrial y logístico. La demanda de consumo final es baja. Recomendado solo para negocios B2B o servicios a empresas.',
   },
 ]
 const SORTED_ZONES = [...ZONES].sort((a, b) => b.score - a.score)
@@ -156,24 +157,24 @@ const SORTED_ZONES = [...ZONES].sort((a, b) => b.score - a.score)
 const USER_LOCATION = { lat: 32.4701, lng: -116.9742, name: 'Mi negocio (Laurel 1, Tijuana)' }
 
 const ALL_COMPETITORS: CompetitorSnapshot[] = [
-  { id: '1', name: 'Caf├⌐ Baja Blend',   distance: 180,  rating: 4.1, reviewCount: 210, businessType: 'Cafeter├¡a', lat: 32.4714, lng: -116.9725, openNow: true,  source: 'google_places' },
-  { id: '2', name: 'Caf├⌐ de Olla TJ',   distance: 320,  rating: 3.7, reviewCount: 74,  businessType: 'Cafeter├¡a', lat: 32.4688, lng: -116.9760, openNow: false, source: 'google_places' },
-  { id: '3', name: 'Latte & Co.',        distance: 490,  rating: 4.0, reviewCount: 165, businessType: 'Cafeter├¡a', lat: 32.4720, lng: -116.9775, openNow: true,  source: 'google_places' },
-  { id: '4', name: 'Caf├⌐ Frontera',      distance: 650,  rating: 3.5, reviewCount: 41,  businessType: 'Cafeter├¡a', lat: 32.4683, lng: -116.9718, openNow: false, source: 'google_places' },
-  { id: '5', name: 'Espresso Tijuana',   distance: 820,  rating: 4.3, reviewCount: 290, businessType: 'Cafeter├¡a', lat: 32.4730, lng: -116.9705, openNow: true,  source: 'google_places' },
-  { id: '6', name: 'Starbucks Laureles', distance: 950,  rating: 4.5, reviewCount: 860, businessType: 'Cafeter├¡a', lat: 32.4675, lng: -116.9790, openNow: true,  source: 'google_places' },
+  { id: '1', name: 'Café Baja Blend',   distance: 180,  rating: 4.1, reviewCount: 210, businessType: 'Cafetería', lat: 32.4714, lng: -116.9725, openNow: true,  source: 'google_places' },
+  { id: '2', name: 'Café de Olla TJ',   distance: 320,  rating: 3.7, reviewCount: 74,  businessType: 'Cafetería', lat: 32.4688, lng: -116.9760, openNow: false, source: 'google_places' },
+  { id: '3', name: 'Latte & Co.',        distance: 490,  rating: 4.0, reviewCount: 165, businessType: 'Cafetería', lat: 32.4720, lng: -116.9775, openNow: true,  source: 'google_places' },
+  { id: '4', name: 'Café Frontera',      distance: 650,  rating: 3.5, reviewCount: 41,  businessType: 'Cafetería', lat: 32.4683, lng: -116.9718, openNow: false, source: 'google_places' },
+  { id: '5', name: 'Espresso Tijuana',   distance: 820,  rating: 4.3, reviewCount: 290, businessType: 'Cafetería', lat: 32.4730, lng: -116.9705, openNow: true,  source: 'google_places' },
+  { id: '6', name: 'Starbucks Laureles', distance: 950,  rating: 4.5, reviewCount: 860, businessType: 'Cafetería', lat: 32.4675, lng: -116.9790, openNow: true,  source: 'google_places' },
 ]
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 // HELPERS
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 
 function scoreColor(s: number)     { return s >= 70 ? 'bg-emerald-500' : s >= 40 ? 'bg-amber-400' : 'bg-red-500' }
 function scoreTextColor(s: number) { return s >= 70 ? 'text-emerald-600' : s >= 40 ? 'text-amber-600' : 'text-red-600' }
 
 function safetyMeta(level: SafetyFactor['level']) {
   if (level === 'alto')  return { bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200', label: 'Favorable',  score: 85 }
-  if (level === 'medio') return { bar: 'bg-amber-400',   badge: 'bg-amber-50 text-amber-700 border border-amber-200',       label: 'Precauci├│n', score: 55 }
+  if (level === 'medio') return { bar: 'bg-amber-400',   badge: 'bg-amber-50 text-amber-700 border border-amber-200',       label: 'Precaución', score: 55 }
   return                        { bar: 'bg-red-500',     badge: 'bg-red-50 text-red-700 border border-red-200',             label: 'Riesgo',     score: 25 }
 }
 
@@ -184,7 +185,7 @@ function overallScore() {
 }
 function overallLabel(score: number) {
   if (score >= 70) return { text: 'Zona apta para operar',    color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' }
-  if (score >= 45) return { text: 'Zona con ├íreas de mejora', color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' }
+  if (score >= 45) return { text: 'Zona con áreas de mejora', color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200' }
   return                   { text: 'Zona de alto riesgo',     color: 'text-red-600',     bg: 'bg-red-50 border-red-200' }
 }
 
@@ -201,13 +202,13 @@ function detectAdvantages(competitors: CompetitorSnapshot[]) {
   const list: { icon: string; title: string; detail: string }[] = []
   const weakest = [...competitors].sort((a, b) => (a.rating ?? 5) - (b.rating ?? 5))[0]
   if (weakest?.rating && weakest.rating < 4.0)
-    list.push({ icon: 'Γ¡É', title: 'Diferenciaci├│n por calidad', detail: `${weakest.name} tiene solo ${weakest.rating}Γÿà ΓÇö el competidor m├ís vulnerable. Un servicio consistente te da ventaja directa.` })
+    list.push({ icon: '⭐', title: 'Diferenciación por calidad', detail: `${weakest.name} tiene solo ${weakest.rating}★ — el competidor más vulnerable. Un servicio consistente te da ventaja directa.` })
   const closed = competitors.filter((c) => !c.openNow)
   if (closed.length > 0)
-    list.push({ icon: '≡ƒòÉ', title: 'Gap de horario detectado', detail: `${closed.length} de ${competitors.length} competidores est├ín cerrados ahora. Horario extendido captura esa demanda.` })
+    list.push({ icon: '🕉', title: 'Gap de horario detectado', detail: `${closed.length} de ${competitors.length} competidores están cerrados ahora. Horario extendido captura esa demanda.` })
   const lowReviews = competitors.filter((c) => (c.reviewCount ?? 999) < 100)
   if (lowReviews.length > 0)
-    list.push({ icon: '≡ƒô▒', title: 'Baja presencia digital en la zona', detail: `${lowReviews.length} competidor(es) con <100 rese├▒as. Con Google Maps activo desde el d├¡a 1 puedes superarlos en 60ΓÇô90 d├¡as.` })
+    list.push({ icon: '📱', title: 'Baja presencia digital en la zona', detail: `${lowReviews.length} competidor(es) con <100 reseñas. Con Google Maps activo desde el día 1 puedes superarlos en 60–90 días.` })
   return list
 }
 
@@ -218,42 +219,9 @@ const ratingDotColor = (r?: number) => {
   return 'bg-red-400'
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 // SUB-COMPONENTES
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-
-/** Burbuja "i" con popover al hacer hover */
-function InfoTooltip({ text }: { text: string }) {
-  const [show, setShow] = useState(false)
-  return (
-    <span className="relative inline-flex items-center shrink-0">
-      <button
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center transition-colors cursor-default"
-        style={{ background: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-        aria-label="M├ís informaci├│n"
-      >
-        i
-      </button>
-      <AnimatePresence>
-        {show && (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-            transition={{ duration: 0.14 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 z-[9999] rounded-xl px-3 py-2.5 text-xs leading-relaxed shadow-xl pointer-events-none"
-            style={{ background: 'var(--color-card-dark)', border: '1px solid var(--color-card-dark-border)', color: '#e4e4e7' }}
-          >
-            {text}
-            <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{ borderTopColor: 'var(--color-card-dark-border)' }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </span>
-  )
-}
+// ═══════════════════════════════════════════════════════════════════
 
 /** Barra de progreso animada */
 function ScoreBar({ score, delay = 0 }: { score: number; delay?: number }) {
@@ -268,7 +236,7 @@ function ScoreBar({ score, delay = 0 }: { score: number; delay?: number }) {
   )
 }
 
-/** Separador de secci├│n con t├¡tulo */
+/** Separador de sección con título */
 function SectionTitle({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3">
@@ -278,23 +246,18 @@ function SectionTitle({ label }: { label: string }) {
   )
 }
 
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 // PAGE
-// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// ═══════════════════════════════════════════════════════════════════
 
 export default function ZonaEstrategicaPage() {
   const { project, updateProject, setProject } = useProjectStore()
   const city = project?.location?.city ?? 'Tijuana, B.C.'
 
-  // estado ubicacion
   const [pendingLocation, setPendingLocation] = useState<[number, number] | null>(null)
   const [locRadius, setLocRadius] = useState(500)
   const [confirmed, setConfirmed] = useState(false)
-
-  // estado zonas
   const [selectedZone, setSelectedZone] = useState<string | null>(null)
-
-  // estado competencia
   const [compRadio, setCompRadio] = useState<CompRadio>(800)
 
   const handleLocationSelect = (lat: number, lng: number) => { setPendingLocation([lat, lng]); setConfirmed(false) }
@@ -308,13 +271,13 @@ export default function ZonaEstrategicaPage() {
     setTimeout(() => setConfirmed(false), 2500)
   }
 
-  const competitors = ALL_COMPETITORS.filter((c) => c.distance <= compRadio)
-  const avgRating    = competitors.length ? +(competitors.reduce((s, c) => s + (c.rating ?? 0), 0) / competitors.length).toFixed(1) : 0
-  const saturation   = calcSaturation(competitors, compRadio)
-  const advantages   = detectAdvantages(competitors)
-  const satColorHex  = { green: '#4ade80', yellow: '#fbbf24', red: '#f87171' }[saturation.color]
+  const competitors    = ALL_COMPETITORS.filter((c) => c.distance <= compRadio)
+  const avgRating      = competitors.length ? +(competitors.reduce((s, c) => s + (c.rating ?? 0), 0) / competitors.length).toFixed(1) : 0
+  const saturation     = calcSaturation(competitors, compRadio)
+  const advantages     = detectAdvantages(competitors)
+  const satColorHex    = { green: '#4ade80', yellow: '#fbbf24', red: '#f87171' }[saturation.color]
   const ratingChartData = [
-    ...competitors.map((c) => ({ name: c.name.length > 14 ? c.name.slice(0, 14) + 'ΓÇª' : c.name, rating: c.rating ?? 0, isUser: false })),
+    ...competitors.map((c) => ({ name: c.name.length > 14 ? c.name.slice(0, 14) + '…' : c.name, rating: c.rating ?? 0, isUser: false })),
     { name: 'Tu meta', rating: 4.5, isUser: true },
   ]
 
@@ -327,15 +290,15 @@ export default function ZonaEstrategicaPage() {
     const wins: { icon: string; text: string }[] = []
     for (const f of FACTORS) {
       if (f.label === 'Competidores cercanos' && f.score < 50)
-        alerts.push({ icon: '≡ƒÅ¬', text: 'Alta competencia en tu radio.', fix: 'Diferencia con producto exclusivo, mejor servicio o precio.', color: 'border-red-700 bg-red-950' })
-      else if (f.label === 'Tr├ífico peatonal' && f.score < 50)
-        alerts.push({ icon: '≡ƒÜ╢', text: 'Bajo tr├ínsito en la zona.', fix: 'Refuerza con redes sociales, Google Maps y delivery.', color: 'border-red-700 bg-red-950' })
-      else if (f.label === 'Nivel socioecon├│mico' && f.score < 50)
-        alerts.push({ icon: '≡ƒÅÿ∩╕Å', text: 'Poder adquisitivo limitado.', fix: 'Ajusta ticket promedio con opciones accesibles.', color: 'border-yellow-700 bg-yellow-950' })
-      if (f.score >= 70) wins.push({ icon: 'Γ£à', text: `${f.label} favorable (${f.score}/100)` })
+        alerts.push({ icon: '🏬', text: 'Alta competencia en tu radio.', fix: 'Diferencia con producto exclusivo, mejor servicio o precio.', color: 'border-red-700 bg-red-950' })
+      else if (f.label === 'Tráfico peatonal' && f.score < 50)
+        alerts.push({ icon: '🚶', text: 'Bajo tránsito en la zona.', fix: 'Refuerza con redes sociales, Google Maps y delivery.', color: 'border-red-700 bg-red-950' })
+      else if (f.label === 'Nivel socioeconómico' && f.score < 50)
+        alerts.push({ icon: '👥', text: 'Poder adquisitivo limitado.', fix: 'Ajusta ticket promedio con opciones accesibles.', color: 'border-yellow-700 bg-yellow-950' })
+      if (f.score >= 70) wins.push({ icon: '✓', text: `${f.label} favorable (${f.score}/100)` })
     }
     for (const s of SAFETY_FACTORS) {
-      if (s.level === 'bajo') alerts.push({ icon: 'ΓÜá∩╕Å', text: `Riesgo: ${s.label}.`, fix: s.detail, color: 'border-red-700 bg-red-950' })
+      if (s.level === 'bajo') alerts.push({ icon: '⚠️', text: `Riesgo: ${s.label}.`, fix: s.detail, color: 'border-red-700 bg-red-950' })
     }
     return { alerts, wins }
   })()
@@ -343,32 +306,29 @@ export default function ZonaEstrategicaPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
 
-      {/* ΓöÇΓöÇ HEADER ΓöÇΓöÇ */}
+      {/* ── HEADER ── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black flex items-center gap-2.5" style={{ color: '#000000' }}>
               <MapPin size={24} strokeWidth={2.2} />
-              Zona estrat├⌐gica
+              Zona estratégica
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              {city} ┬╖ An├ílisis integral de ubicaci├│n, infraestructura, zonas y competencia
+              {city} · Análisis integral de ubicación, infraestructura, zonas y competencia
             </p>
           </div>
-          <DataBadge type="estimacion" label="OSM ┬╖ INEGI ┬╖ Google Places" />
+          <DataBadge type="estimacion" label="OSM · INEGI · Google Places" />
         </div>
       </motion.div>
 
-      {/* ΓöÇΓöÇ PUNTUACI├ôN GLOBAL ΓÇö dark box ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── PUNTUACIÓN GLOBAL — dark box ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}
       >
         <div className="dark-box rounded-2xl p-5 flex items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-xs dark-box-muted">Aptitud general de la zona</p>
-              <InfoTooltip text="Promedio ponderado de factores comerciales (60 %) y factores de seguridad e infraestructura (40 %). Escala 0ΓÇô100; ΓëÑ70 = zona apta." />
-            </div>
+            <p className="text-xs dark-box-muted mb-1">Aptitud general de la zona</p>
             <p className="text-lg font-bold">{overallInfo.text}</p>
             <p className="text-xs mt-1 dark-box-muted">Basado en {FACTORS.length} factores comerciales y {SAFETY_FACTORS.length} de infraestructura</p>
           </div>
@@ -379,24 +339,21 @@ export default function ZonaEstrategicaPage() {
         </div>
       </motion.div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECCI├ôN 1 ΓÇö FACTORES COMERCIALES Y DE INFRAESTRUCTURA
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECCIÓN 1 — FACTORES COMERCIALES Y DE INFRAESTRUCTURA
+      ═══════════════════════════════════════════════════════════════════ */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }}>
-        <SectionTitle label="1 ┬╖ Factores del entorno" />
+        <SectionTitle label="1 · Factores del entorno" />
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* Factores comerciales ΓÇö card blanca */}
+        {/* Factores comerciales — card blanca */}
         <motion.div
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}
           className="card rounded-2xl p-5 space-y-4"
         >
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Factores comerciales</p>
-            <InfoTooltip text="Indicadores que afectan directamente el flujo de clientes y la viabilidad comercial del local. Fuente: OpenStreetMap, INEGI, datos de movilidad." />
-          </div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Factores comerciales</p>
           {FACTORS.map((f, i) => (
             <div key={f.label}>
               <div className="flex items-center justify-between gap-2">
@@ -411,15 +368,12 @@ export default function ZonaEstrategicaPage() {
           ))}
         </motion.div>
 
-        {/* Seguridad e infraestructura ΓÇö dark box */}
+        {/* Seguridad e infraestructura — dark box */}
         <motion.div
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.11 }}
         >
           <div className="dark-box rounded-2xl p-5 space-y-4">
-            <div className="flex items-center gap-2 pb-1" style={{ borderBottom: '1px solid #1f1f1f' }}>
-              <p className="text-sm font-semibold">Seguridad e infraestructura</p>
-              <InfoTooltip text="Condiciones externas que afectan la operaci├│n diaria y la percepci├│n de seguridad de clientes y empleados. Fuente: C4 Tijuana, CFE, Protecci├│n Civil, Municipio." />
-            </div>
+            <p className="text-sm font-semibold pb-1" style={{ borderBottom: '1px solid #1f1f1f' }}>Seguridad e infraestructura</p>
             {SAFETY_FACTORS.map((f, i) => {
               const m = safetyMeta(f.level)
               return (
@@ -427,7 +381,7 @@ export default function ZonaEstrategicaPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-sm truncate">{f.label}</span>
-                      <InfoTooltip text={f.tooltip} />
+                      <InfoTooltip text={f.tooltip} variant="dark" />
                     </div>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${m.badge}`}>{m.label}</span>
                   </div>
@@ -438,7 +392,6 @@ export default function ZonaEstrategicaPage() {
                       className={`h-full rounded-full ${m.bar}`}
                     />
                   </div>
-                  <p className="text-xs mt-1 dark-box-muted">{f.detail}</p>
                 </div>
               )
             })}
@@ -452,23 +405,17 @@ export default function ZonaEstrategicaPage() {
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
         className="card rounded-2xl p-5"
       >
-        <div className="flex items-center gap-2 mb-4">
-          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Modos de acceso al local</p>
-          <InfoTooltip text="Distribuci├│n estimada de c├│mo llegan los clientes a negocios en esta zona seg├║n datos de movilidad de OSM y INEGI. Afecta directamente la estrategia de parking, se├▒alizaci├│n y delivery." />
-        </div>
+        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Modos de acceso al local</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {([
-            { mode: 'Autom├│vil',          pct: 55, color: 'bg-blue-500',   tooltip: 'La mayor├¡a de clientes en Colonia Laurel llega en auto. Asegura visibilidad desde la calle y referencia de estacionamiento cercano.' },
-            { mode: 'Transporte p├║blico', pct: 28, color: 'bg-yellow-500', tooltip: 'Rutas de cami├│n urbano (SITRANSPE) con parada a <300 m. Se├▒alizaci├│n hacia el local desde la parada m├ís cercana es clave.' },
-            { mode: 'Peatonal',           pct: 12, color: 'bg-green-500',  tooltip: 'Bajo flujo peatonal espont├íneo. Negocio orientado principalmente a clientela habitual y de destino, no de paso.' },
-            { mode: 'Bicicleta',          pct: 5,  color: 'bg-purple-500', tooltip: 'Uso ciclista menor al promedio de la ciudad. No es necesario invertir en ciclopuerto como prioridad inmediata.' },
-          ] as const).map(({ mode, pct, color, tooltip }, i) => (
+            { mode: 'Automóvil',          pct: 55, color: 'bg-blue-500'   },
+            { mode: 'Transporte público', pct: 28, color: 'bg-yellow-500' },
+            { mode: 'Peatonal',           pct: 12, color: 'bg-green-500'  },
+            { mode: 'Bicicleta',          pct: 5,  color: 'bg-purple-500' },
+          ] as const).map(({ mode, pct, color }, i) => (
             <div key={mode}>
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm" style={{ color: 'var(--color-text)' }}>{mode}</span>
-                  <InfoTooltip text={tooltip} />
-                </div>
+                <span className="text-sm" style={{ color: 'var(--color-text)' }}>{mode}</span>
                 <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{pct}%</span>
               </div>
               <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
@@ -488,11 +435,8 @@ export default function ZonaEstrategicaPage() {
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}
         className="card rounded-2xl p-5 space-y-3"
       >
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Alertas y c├│mo resolverlas</p>
-          <InfoTooltip text="Factores del entorno cuya puntuaci├│n indica riesgo o ├írea de mejora. Cada alerta incluye una acci├│n concreta para mitigar el impacto." />
-        </div>
-        {alerts.length === 0 && <p className="text-sm text-emerald-600">Sin riesgos cr├¡ticos detectados en esta zona.</p>}
+        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Alertas y cómo resolverlas</p>
+        {alerts.length === 0 && <p className="text-sm text-emerald-600">Sin riesgos críticos detectados en esta zona.</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {alerts.map((a, i) => (
             <div key={i} className="rounded-xl border p-4"
@@ -512,11 +456,11 @@ export default function ZonaEstrategicaPage() {
         </div>
       </motion.div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECCI├ôN 2 ΓÇö MAPA Y ZONAS DE OPORTUNIDAD
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECCIÓN 2 — MAPA Y ZONAS DE OPORTUNIDAD
+      ═══════════════════════════════════════════════════════════════════ */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <SectionTitle label="2 ┬╖ Mapa y zonas de oportunidad" />
+        <SectionTitle label="2 · Mapa y zonas de oportunidad" />
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -526,10 +470,10 @@ export default function ZonaEstrategicaPage() {
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}
           className="card rounded-2xl overflow-hidden"
         >
-          <div className="px-5 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <div className="px-5 py-3 flex items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--color-border)', minHeight: 0 }}>
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-text)' }}>Ubicar mi negocio</p>
-              <InfoTooltip text="Haz clic en el mapa para fijar la ubicaci├│n exacta del local. El c├¡rculo muestra el radio de influencia estimado. La ubicaci├│n se guarda en tu proyecto." />
+              <InfoTooltip text="Haz clic en el mapa para fijar la ubicación exacta del local. El círculo muestra el radio de influencia estimado. La ubicación se guarda en tu proyecto." />
             </div>
             <div className="flex gap-2">
               {RADIUS_OPTIONS.map((opt) => (
@@ -544,7 +488,7 @@ export default function ZonaEstrategicaPage() {
               ))}
             </div>
           </div>
-          <div>
+          <div style={{ padding: 3 }}>
             <InteractiveMap center={pendingLocation ?? undefined} radius={locRadius} onLocationSelect={handleLocationSelect} />
           </div>
           <AnimatePresence>
@@ -560,7 +504,7 @@ export default function ZonaEstrategicaPage() {
                     ? { background: '#d1fae5', color: '#065f46', cursor: 'default' }
                     : { background: 'var(--color-accent)', color: 'var(--color-accent-fg)' }
                   }>
-                  {confirmed ? 'Ubicaci├│n guardada' : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`}
+                  {confirmed ? 'Ubicación guardada' : `Confirmar (${pendingLocation[0].toFixed(4)}, ${pendingLocation[1].toFixed(4)})`}
                 </button>
               </motion.div>
             )}
@@ -574,8 +518,8 @@ export default function ZonaEstrategicaPage() {
         >
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>├ìndice de oportunidad por zona</p>
-              <InfoTooltip text="Ranking de zonas de Tijuana seg├║n su potencial para tu tipo de negocio. El ├¡ndice pondera densidad poblacional, NSE, tr├ífico y competencia. Fuente: OSM + INEGI." />
+              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Índice de oportunidad por zona</p>
+              <InfoTooltip text="Ranking de zonas de Tijuana según su potencial para tu tipo de negocio. El índice pondera densidad poblacional, NSE, tráfico y competencia. Fuente: OSM + INEGI." />
             </div>
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>OSM + INEGI</span>
           </div>
@@ -593,10 +537,10 @@ export default function ZonaEstrategicaPage() {
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-sm truncate" style={{ color: 'var(--color-text)' }}>{z.name}</span>
-                  <InfoTooltip text={z.tooltip} />
+                    <InfoTooltip text={z.tooltip} />
+                  </div>
+                  <span className={`text-xs font-bold shrink-0 ${scoreTextColor(z.score)}`}>{z.score}/100</span>
                 </div>
-                <span className={`text-xs font-bold shrink-0 ${scoreTextColor(z.score)}`}>{z.score}/100</span>
-              </div>
               <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${z.score}%` }}
                   transition={{ duration: 0.55, delay: 0.05 * i }}
@@ -612,7 +556,7 @@ export default function ZonaEstrategicaPage() {
                 transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                 className="overflow-hidden">
                 <div className="mt-1 rounded-xl p-4" style={{ background: 'var(--color-input)', border: '1px solid var(--color-border)' }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{selected.name} ΓÇö {selected.score}/100</p>
+                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{selected.name} — {selected.score}/100</p>
                   <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{selected.detail}</p>
                 </div>
               </motion.div>
@@ -626,18 +570,19 @@ export default function ZonaEstrategicaPage() {
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }}
         className="card rounded-2xl overflow-hidden"
       >
-        <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Mapa de calor por zona</p>
-          <InfoTooltip text="Visualizaci├│n geoespacial del ├¡ndice de oportunidad de cada zona de Tijuana. Tonos m├ís c├ílidos = mayor oportunidad comercial. Haz clic en una zona del ranking para resaltarla." />
         </div>
-        <HeatmapLayer selectedZone={selectedZone} zones={ZONES} />
+        <div style={{ padding: 3 }}>
+          <HeatmapLayer selectedZone={selectedZone} zones={ZONES} />
+        </div>
       </motion.div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECCI├ôN 3 ΓÇö AN├üLISIS DE COMPETENCIA
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECCIÓN 3 — ANÁLISIS DE COMPETENCIA
+      ═══════════════════════════════════════════════════════════════════ */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.23 }}>
-        <SectionTitle label="3 ┬╖ An├ílisis de competencia" />
+        <SectionTitle label="3 · Análisis de competencia" />
       </motion.div>
 
       {/* Radio selector + KPIs */}
@@ -648,8 +593,8 @@ export default function ZonaEstrategicaPage() {
         {/* Radio */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Radio de an├ílisis</p>
-            <InfoTooltip text="El radio define el ├írea circular alrededor de tu negocio donde se cuentan los competidores. A mayor radio, m├ís negocios incluidos pero menor relevancia de los m├ís lejanos." />
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Radio de análisis</p>
+            <InfoTooltip text="El radio define el área circular alrededor de tu negocio donde se cuentan los competidores. A mayor radio, más negocios incluidos pero menor relevancia de los más lejanos." />
           </div>
           <div className="flex gap-2 flex-wrap">
             {COMP_RADIOS.map((r) => (
@@ -665,7 +610,7 @@ export default function ZonaEstrategicaPage() {
           </div>
         </div>
 
-        {/* KPI cards ΓÇö 3 en una fila */}
+        {/* KPI cards — 3 en una fila */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Competidores */}
           <div className="card rounded-2xl p-4"
@@ -674,12 +619,12 @@ export default function ZonaEstrategicaPage() {
                    { borderColor: '#fca5a5', background: '#fef2f2' }}>
             <div className="flex items-center gap-2 mb-2">
               <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Competidores en radio</p>
-              <InfoTooltip text="Negocios del mismo giro comercial dentro del radio seleccionado, seg├║n datos de Google Places. Solo se cuentan establecimientos activos." />
+              <InfoTooltip text="Negocios del mismo giro comercial dentro del radio seleccionado, según datos de Google Places. Solo se cuentan establecimientos activos." />
             </div>
             <p className={`text-2xl font-black ${scoreTextColor(saturation.color === 'green' ? 80 : saturation.color === 'yellow' ? 55 : 30)}`}>
               {competitors.length} negocios
             </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>Densidad: {saturation.density} neg/km┬▓ ┬╖ {saturation.label}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>Densidad: {saturation.density} neg/km² · {saturation.label}</p>
           </div>
 
           {/* Rating promedio */}
@@ -689,48 +634,48 @@ export default function ZonaEstrategicaPage() {
                    { borderColor: '#6ee7b7', background: '#ecfdf5' }}>
             <div className="flex items-center gap-2 mb-2">
               <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Rating promedio de la zona</p>
-              <InfoTooltip text="Promedio de estrellas de los competidores en el radio. Rating alto = mercado exigente donde la calidad es el diferenciador. Rating bajo = oportunidad de sobresalir f├ícilmente." />
+              <InfoTooltip text="Promedio de estrellas de los competidores en el radio. Rating alto = mercado exigente donde la calidad es el diferenciador. Rating bajo = oportunidad de sobresalir fácilmente." />
             </div>
             <p className={`text-2xl font-black ${avgRating >= 4.2 ? 'text-red-400' : avgRating >= 3.8 ? 'text-yellow-400' : 'text-green-400'}`}>
-              {avgRating} Γÿà
+              {avgRating} ★
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              {avgRating < 4.0 ? 'Oportunidad de diferenciarse por calidad.' : 'Zona competitiva ΓÇö difer├⌐nciate en otro factor.'}
+              {avgRating < 4.0 ? 'Oportunidad de diferenciarse por calidad.' : 'Zona competitiva — diferénciate en otro factor.'}
             </p>
           </div>
 
-          {/* M├ís cercano */}
+          {/* Más cercano */}
           <div className="card rounded-2xl p-4" style={{ borderColor: '#93c5fd', background: '#eff6ff' }}>
             <div className="flex items-center gap-2 mb-2">
-              <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Competidor m├ís cercano</p>
-              <InfoTooltip text="El negocio del mismo giro que est├í a menor distancia lineal de tu ubicaci├│n. La distancia real puede ser mayor por la trama urbana." />
+              <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Competidor más cercano</p>
+              <InfoTooltip text="El negocio del mismo giro que está a menor distancia lineal de tu ubicación. La distancia real puede ser mayor por la trama urbana." />
             </div>
             <p className="text-2xl font-black" style={{ color: '#3b82f6' }}>
-              {competitors[0] ? `${competitors[0].distance} m` : 'ΓÇö'}
+              {competitors[0] ? `${competitors[0].distance} m` : '—'}
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              {competitors[0] ? `${competitors[0].name} ┬╖ ${competitors[0].rating}Γÿà` : 'Sin competidores en este radio'}
+              {competitors[0] ? `${competitors[0].name} · ${competitors[0].rating}★` : 'Sin competidores en este radio'}
             </p>
           </div>
         </div>
       </motion.div>
 
-      {/* Saturaci├│n + gr├ífica de ratings en fila */}
+      {/* Saturación + gráfica de ratings en fila */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        {/* ├ìndice de saturaci├│n */}
+        {/* Índice de saturación */}
         <motion.div
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.27 }}
           className="card rounded-2xl p-5 space-y-4"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>├ìndice de saturaci├│n</p>
-              <InfoTooltip text="Mide cu├íntos negocios del mismo tipo hay por km┬▓ dentro del radio. F├│rmula: N ├╖ (╧Ç ├ù r┬▓). <2 neg/km┬▓ = baja competencia; >5 = mercado saturado." />
+              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Índice de saturación</p>
+              <InfoTooltip text="Mide cuántos negocios del mismo tipo hay por km² dentro del radio. Fórmula: N ÷ (π × r²). <2 neg/km² = baja competencia; >5 = mercado saturado." />
             </div>
             <div className="text-right shrink-0">
               <span className="text-2xl font-black" style={{ color: satColorHex }}>{saturation.density}</span>
-              <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>neg/km┬▓</span>
+              <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>neg/km²</span>
               <p className="text-xs font-semibold mt-0.5" style={{ color: satColorHex }}>{saturation.label}</p>
             </div>
           </div>
@@ -739,28 +684,27 @@ export default function ZonaEstrategicaPage() {
               style={{ background: 'linear-gradient(to right, #10b981 0%, #f59e0b 50%, #ef4444 100%)' }} />
             <motion.div
               className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 shadow-lg z-10"
-              style={{ background: 'var(--color-card)' }}
               style={{ borderColor: satColorHex }}
               initial={{ left: '0%' }} animate={{ left: `calc(${saturation.pct}% - 8px)` }}
               transition={{ type: 'spring', stiffness: 200, damping: 25 }} />
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-emerald-600">Baja &lt; 2</span>
-            <span className="text-amber-600">Media 2ΓÇô5</span>
+            <span className="text-amber-600">Media 2–5</span>
             <span className="text-red-600">Alta &gt; 5</span>
           </div>
         </motion.div>
 
-        {/* Gr├ífica de ratings */}
+        {/* Gráfica de ratings */}
         <motion.div
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.29 }}
           className="card rounded-2xl p-5"
         >
           <div className="flex items-center gap-2 mb-4">
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Comparaci├│n de ratings</p>
-            <InfoTooltip text="Ratings de Google Places de cada competidor. La barra negra es tu meta (4.5Γÿà). La l├¡nea punteada marca 4.0Γÿà ΓÇö umbral m├¡nimo para no perder clientes por calificaci├│n." />
-            <span className="text-xs ml-auto" style={{ color: 'var(--color-text)' }}>Γûá Tu meta</span>
-            <span className="text-xs text-amber-600">Γûá Competencia</span>
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Comparación de ratings</p>
+            <InfoTooltip text="Ratings de Google Places de cada competidor. La barra negra es tu meta (4.5★). La línea punteada marca 4.0★ — umbral mínimo para no perder clientes por calificación." />
+            <span className="text-xs ml-auto" style={{ color: 'var(--color-text)' }}>◼ Tu meta</span>
+            <span className="text-xs text-amber-600">◼ Competencia</span>
           </div>
           <ResponsiveContainer width="100%" height={Math.max(150, ratingChartData.length * 36)}>
             <BarChart data={ratingChartData} layout="vertical" margin={{ left: 4, right: 36, top: 4, bottom: 4 }}>
@@ -771,10 +715,10 @@ export default function ZonaEstrategicaPage() {
                 contentStyle={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '4px 10px', fontSize: 11, color: 'var(--color-text)' }}
                 formatter={(v, _n, props) => {
                   const color = props.payload?.isUser ? 'var(--color-text)' : '#f59e0b'
-                  return [<span key="v" style={{ color, fontWeight: 700 }}>{`${v} Γÿà`}</span>, '']
+                  return [<span key="v" style={{ color, fontWeight: 700 }}>{`${v} ★`}</span>, '']
                 }} />
               <ReferenceLine x={4} stroke="var(--color-border-strong)" strokeDasharray="4 4"
-                label={{ value: '4.0Γÿà', fontSize: 10, fill: 'var(--color-text-muted)', position: 'right' }} />
+                label={{ value: '4.0★', fontSize: 10, fill: 'var(--color-text-muted)', position: 'right' }} />
               <Bar dataKey="rating" radius={[0, 6, 6, 0]}>
                 {ratingChartData.map((entry, i) => <Cell key={i} fill={entry.isUser ? 'var(--color-text)' : '#f59e0b'} />)}
               </Bar>
@@ -786,19 +730,23 @@ export default function ZonaEstrategicaPage() {
       {/* Mapa de competidores */}
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}
-        className="card rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-hidden"
+        style={{ background: '#000', border: '1px solid #1f1f1f' }}
       >
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Mapa de competidores</p>
-            <InfoTooltip text="El c├¡rculo muestra el radio de an├ílisis. Pin azul = tu negocio. Pins rojos = competidores. Haz clic en un pin para ver el detalle del competidor." />
-          </div>
-          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-            <span>≡ƒö╡ Tu negocio</span>
-            <span>≡ƒö┤ Competencia</span>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #1f1f1f' }}>
+          <p className="text-sm font-semibold" style={{ color: '#f4f4f5' }}>Mapa de competidores</p>
+          <div className="flex items-center gap-4 text-xs" style={{ color: '#71717a' }}>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={12} strokeWidth={2.5} style={{ color: '#3b82f6' }} />
+              Tu negocio
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={12} strokeWidth={2.5} style={{ color: '#ef4444' }} />
+              Competencia
+            </span>
           </div>
         </div>
-        <div className="overflow-hidden rounded-b-2xl">
+        <div style={{ padding: 3 }}>
           <CompetitorMap userLocation={USER_LOCATION} competitors={competitors} radioMeters={compRadio} />
         </div>
       </motion.div>
@@ -809,16 +757,13 @@ export default function ZonaEstrategicaPage() {
         className="card rounded-2xl overflow-hidden"
       >
         <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Detalle de competidores</p>
-            <InfoTooltip text="Datos de Google Places API: nombre, distancia lineal desde tu ubicaci├│n, rating, n├║mero de rese├▒as y estado de apertura al momento del an├ílisis." />
-          </div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Detalle de competidores</p>
           <DataBadge type="dato" label="Google Places" />
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left" style={{ background: 'var(--color-input)', borderBottom: '1px solid var(--color-border)' }}>
-              {['Nombre', 'Distancia', 'Rating', 'Rese├▒as', 'Estado'].map((h) => (
+              {['Nombre', 'Distancia', 'Rating', 'Reseñas', 'Estado'].map((h) => (
                 <th key={h} className="px-5 py-3 font-medium text-xs uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>{h}</th>
               ))}
             </tr>
@@ -838,7 +783,7 @@ export default function ZonaEstrategicaPage() {
                   <td className="px-5 py-3">
                     <span className="flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${ratingDotColor(c.rating)}`} />
-                      <span style={{ color: 'var(--color-text)' }}>{c.rating} Γÿà</span>
+                      <span style={{ color: 'var(--color-text)' }}>{c.rating} ★</span>
                     </span>
                   </td>
                   <td className="px-5 py-3" style={{ color: 'var(--color-text-secondary)' }}>{c.reviewCount?.toLocaleString('en-US')}</td>
@@ -856,12 +801,12 @@ export default function ZonaEstrategicaPage() {
         </table>
       </motion.div>
 
-      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
-          SECCI├ôN 4 ΓÇö VENTAJA POTENCIAL Y ACCI├ôN
-      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECCIÓN 4 — VENTAJA POTENCIAL Y ACCIÓN
+      ═══════════════════════════════════════════════════════════════════ */}
       {advantages.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-          <SectionTitle label="4 ┬╖ Tu ventaja potencial" />
+          <SectionTitle label="4 · Tu ventaja potencial" />
         </motion.div>
       )}
 
@@ -870,10 +815,9 @@ export default function ZonaEstrategicaPage() {
           initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }}
           className="space-y-3"
         >
-          <div className="flex items-center gap-2">
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Detectado autom├íticamente al comparar rating, horario y presencia digital de los competidores.</p>
-            <InfoTooltip text="El algoritmo detecta brechas explotables comparando los datos de todos los competidores en el radio: rating m├ís bajo que 4.0, negocios cerrados en este momento y baja cantidad de rese├▒as." />
-          </div>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            Detectado automáticamente al comparar rating, horario y presencia digital de los competidores.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {advantages.map((a, i) => (
               <div key={i} className="card flex gap-4 p-4 rounded-2xl transition-colors">
@@ -887,10 +831,10 @@ export default function ZonaEstrategicaPage() {
         </motion.div>
       )}
 
-      {/* Acci├│n recomendada */}
+      {/* Acción recomendada */}
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.39 }}>
         <ImprovementCard
-          title="Acci├│n recomendada"
+          title="Acción recomendada"
           action={`${
             competitors.filter((c) => !c.openNow).length > 0
               ? `${competitors.filter((c) => !c.openNow).length} competidor(es) no cubren el horario completo. `
@@ -899,7 +843,7 @@ export default function ZonaEstrategicaPage() {
             competitors.filter((c) => (c.reviewCount ?? 999) < 150).length > 0
               ? `${competitors.filter((c) => (c.reviewCount ?? 999) < 150).length} competidor(es) tienen baja presencia digital. `
               : ''
-          }Abre con horario extendido y solicita rese├▒as activamente desde el d├¡a 1 ΓÇö puedes aparecer en el top 3 de Google Maps local en 60ΓÇô90 d├¡as.`}
+          }Abre con horario extendido y solicita reseñas activamente desde el día 1 — puedes aparecer en el top 3 de Google Maps local en 60–90 días.`}
         />
       </motion.div>
 
