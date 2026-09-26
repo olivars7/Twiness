@@ -19,7 +19,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "viabL — Simula tu negocio antes de abrirlo",
+  title: "Twiness — Simula tu negocio antes de abrirlo",
   description: "Gemelo digital comercial para emprendedores en Tijuana, B.C.",
 };
 

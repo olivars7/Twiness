@@ -126,7 +126,7 @@ function MonitorMockup() {
             style={{ background: '#0f0f14', border: '1px solid #2e2e38' }}
           >
             <span className="text-[10px] font-medium tracking-wide" style={{ color: '#4b5563' }}>
-              viabl.app/proyecto
+              twiness.app/proyecto
             </span>
           </div>
         </div>
@@ -182,9 +182,9 @@ export default function LandingPage() {
   const quizReady      = answeredCount === QUIZ_QUESTIONS.length
 
   function quizMessage() {
-    if (yesCount === 4) return { text: '¡Excelente! Tienes bases sólidas. viabL te ayudará a afinar los detalles.', color: '#10b981' }
-    if (yesCount >= 2) return { text: `Tienes ${4 - yesCount} área(s) clave por definir. viabL las analiza por ti.`, color: '#f59e0b' }
-    return { text: `Te faltan ${4 - yesCount} puntos críticos antes de abrir. viabL te guía paso a paso.`, color: '#ef4444' }
+    if (yesCount === 4) return { text: '¡Excelente! Tienes bases sólidas. Twiness te ayudará a afinar los detalles.', color: '#10b981' }
+    if (yesCount >= 2) return { text: `Tienes ${4 - yesCount} área(s) clave por definir. Twiness las analiza por ti.`, color: '#f59e0b' }
+    return { text: `Te faltan ${4 - yesCount} puntos críticos antes de abrir. Twiness te guía paso a paso.`, color: '#ef4444' }
   }
 
   useEffect(() => {
@@ -226,25 +226,38 @@ export default function LandingPage() {
         }}
       >
         <div className="flex items-center gap-3">
-          <img src="/logoBasico.png" alt="viabL" className="h-10 w-auto" />
+          <img src="/favicon.ico" alt="Twiness" className="h-8 w-auto" />
           <span className="text-2xl font-black tracking-tight" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-sora)' }}>
-            viab<span style={{ color: '#3b82f6' }}>L</span>
+            Twiness
           </span>
         </div>
         <div className="flex items-center gap-2.5">
           <AnimatePresence>
             {hasProject && (
-              <motion.button
-                key="nav-project"
-                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-                onClick={() => router.push('/proyecto')}
-                className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-xl"
-                style={{ background: '#3b82f610', color: '#3b82f6', border: '1px solid #3b82f624' }}
-              >
-                <Sparkles size={11} strokeWidth={2} />
-                {projectName}
-              </motion.button>
+              <>
+                <motion.button
+                  key="nav-project"
+                  initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                  onClick={() => router.push('/proyecto')}
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-xl"
+                  style={{ background: '#3b82f610', color: '#3b82f6', border: '1px solid #3b82f624' }}
+                >
+                  <Sparkles size={11} strokeWidth={2} />
+                  {projectName}
+                </motion.button>
+                <motion.button
+                  key="nav-analisis"
+                  initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 28, delay: 0.05 }}
+                  onClick={() => router.push('/analisis')}
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-xl"
+                  style={{ background: '#0f0f1008', color: 'var(--color-text-secondary)', border: '1px solid rgba(0,0,0,0.08)' }}
+                >
+                  <BarChart3 size={11} strokeWidth={2} />
+                  Análisis
+                </motion.button>
+              </>
             )}
           </AnimatePresence>
           <motion.button
@@ -475,7 +488,7 @@ export default function LandingPage() {
           >
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#6b7280' }}>Transparencia</p>
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
-              ¿viabL es para ti?
+              ¿Twiness es para ti?
             </h2>
           </motion.div>
 
@@ -598,8 +611,7 @@ export default function LandingPage() {
         className="py-5 text-center text-xs"
         style={{ background: '#0f0f10', borderTop: '1px solid #1f1f23', color: '#374151' }}
       >
-        viab<span style={{ color: '#3b82f6' }}>L</span>
-        {' '}· Hackathon MVP · Tijuana, B.C., México
+        Twiness · Hackathon MVP · Tijuana, B.C., México
       </footer>
 
     </main>

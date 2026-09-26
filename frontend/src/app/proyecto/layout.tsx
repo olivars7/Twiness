@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MODULE_ICONS } from '@/lib/icons'
-import { Bot, Sun, Moon } from 'lucide-react'
+import { Bot, Sun, Moon, BarChart3 } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useState, useEffect } from 'react'
 
@@ -51,13 +51,11 @@ function DarkToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void })
   return (
     <motion.button
       onClick={onToggle}
-      whileTap={{ scale: 0.88 }}
-      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0"
-      style={{
-        background: dark ? '#f0f0f4' : '#0f0f10',
-        color: dark ? '#0f0f10' : '#f0f0f4',
-        border: dark ? '1px solid #3a3a46' : '1px solid #2a2a32',
-      }}
+      whileTap={{ scale: 0.95 }}
+      className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+      style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-text-muted)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' }}
       title={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -66,10 +64,10 @@ function DarkToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void })
           initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
           animate={{ rotate: 0,   opacity: 1, scale: 1 }}
           exit={{    rotate:  90, opacity: 0, scale: 0.6 }}
-          transition={{ duration: 0.22, ease: 'easeInOut' }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
           className="flex items-center justify-center"
         >
-          {dark ? <Sun size={14} strokeWidth={2} /> : <Moon size={14} strokeWidth={2} />}
+          {dark ? <Sun size={13} strokeWidth={1.75} /> : <Moon size={13} strokeWidth={1.75} />}
         </motion.span>
       </AnimatePresence>
     </motion.button>
@@ -112,9 +110,9 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
         {/* Logo + project name */}
         <div className="px-4 pt-5 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <Link href="/" className="flex items-center gap-3 mb-3">
-            <img src="/logoBasico.png" alt="viabL" className="h-10 w-auto" />
+            <img src={dark ? '/whiteLogo.png' : '/favicon.ico'} alt="Twiness" className="h-8 w-auto" />
             <span className="text-2xl font-black tracking-tight" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-sora)' }}>
-              viab<span style={{ color: '#3b82f6' }}>L</span>
+              Twiness
             </span>
           </Link>
           <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>{businessName}</p>
@@ -226,30 +224,34 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
 
       {/* ── Floating action buttons — top-right ─────────────────────────────── */}
       <div
-        className="fixed top-[5px] right-[5px] z-30 flex items-center gap-1.5 rounded-xl px-1.5 py-1"
-        style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', boxShadow: '0 4px 16px 0 rgb(0 0 0 / 0.18), 0 1px 4px 0 rgb(0 0 0 / 0.10)' }}
+        className="fixed top-[5px] right-[5px] z-30 flex items-center gap-1 rounded-xl px-1.5 py-1"
+        style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', boxShadow: '0 4px 16px 0 rgb(0 0 0 / 0.12), 0 1px 4px 0 rgb(0 0 0 / 0.07)' }}
       >
-        {/* Dark mode toggle */}
+        {/* Dark mode toggle — matches sibling buttons */}
         <DarkToggle dark={dark} onToggle={() => setDark(d => !d)} />
 
+        {/* Análisis */}
         <Link
-          href="/proyecto/agente"
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors"
-          style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed'; (e.currentTarget as HTMLElement).style.color = '#7c3aed' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' }}
-        >
-          <Bot size={13} />
-          Agente IA
-        </Link>
-        <Link
-          href="/onboarding"
-          className="flex items-center text-xs px-2.5 py-1.5 rounded-lg transition-colors"
+          href="/analisis"
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors"
           style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#3b82f6'; (e.currentTarget as HTMLElement).style.color = '#3b82f6' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' }}
         >
-          ← Editar
+          <BarChart3 size={13} strokeWidth={1.75} />
+          Análisis
+        </Link>
+
+        {/* Agente IA → "IA" */}
+        <Link
+          href="/proyecto/agente"
+          className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition-colors"
+          style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed'; (e.currentTarget as HTMLElement).style.color = '#7c3aed' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' }}
+        >
+          <Bot size={13} strokeWidth={1.75} />
+          IA
         </Link>
       </div>
 

@@ -6,7 +6,6 @@ import { TrendingUp, DollarSign, CheckCircle, XCircle, AlertCircle, Lightbulb, A
 import { calcBreakEven, calcIncomeStatement, calcProjection, calcDemandFactor, getPriceWarning, type PriceWarning } from '@/lib/financial'
 import BreakEvenChart from '@/components/charts/BreakEvenChart'
 import CashFlowChart from '@/components/charts/CashFlowChart'
-import DataBadge from '@/components/ui/DataBadge'
 import InfoTooltip from '@/components/ui/InfoTooltip'
 
 // ─── localStorage ─────────────────────────────────────────────────────────────
@@ -303,7 +302,6 @@ export default function SimuladorRentabilidadPage() {
               ¿Es viable tu idea? Ajusta los números y descúbrelo — guardado automáticamente
             </p>
           </div>
-          <DataBadge type="estimacion" label="Motor financiero viabL" />
         </div>
       </motion.div>
 

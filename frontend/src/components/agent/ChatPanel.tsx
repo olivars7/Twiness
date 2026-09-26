@@ -55,7 +55,7 @@ export default function ChatPanel() {
           <span className="text-xs font-bold" style={{ color: '#a78bfa' }}>AI</span>
         </div>
         <div>
-          <p className="font-semibold text-xs" style={{ color: 'var(--color-text)' }}>Asesor viabL</p>
+          <p className="font-semibold text-xs" style={{ color: 'var(--color-text)' }}>Asesor Twiness</p>
           <p className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>watsonx.ai · contextualizado</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
