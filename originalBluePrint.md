@@ -11,7 +11,7 @@ Plataforma web que permite a emprendedores simular y analizar su negocio antes d
 - IA del producto: watsonx.ai (IBM Cloud) como motor del agente
 - IDE de desarrollo: IBM BOB (cada integrante con su propio BOB sobre el repositorio compartido)
 - Mapas: Leaflet + OpenStreetMap + Google Places API (competencia y POIs) + Google Routes API (accesibilidad)
-- Datos: INEGI (demografía, nivel socioeconómico), Overpass/OSM (POIs), Google Places (negocios), RETyS (trámites)
+- Datos: INEGI (demografía, nivel socioeconómico), Overpass/OSM (POIs), Google Places (negocios), RETyS (tnrámites)
 
 **Ciudad MVP (placeholder):** Tijuana, B.C., México
 **Tipos de negocio iniciales (placeholder):** Cafetería, Barbería, Tienda de conveniencia
