@@ -226,7 +226,7 @@ export default function LandingPage() {
         }}
       >
         <div className="flex items-center gap-3">
-          <img src="/favicon.ico" alt="Twiness" className="h-8 w-auto" />
+          <img src="/logo-black.png" alt="Twiness" className="h-8 w-auto" />
           <span className="text-2xl font-black tracking-tight" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-sora)' }}>
             Twiness
           </span>

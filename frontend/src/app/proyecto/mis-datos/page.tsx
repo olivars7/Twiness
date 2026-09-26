@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { useLocalBusinessData } from '@/hooks/useLocalBusinessData'
 import { useOnboardingStore, type OnboardingData } from '@/store/onboardingStore'
-import SquareField from '@/components/ui/SquareField'
 
 // ─── Editable field ───────────────────────────────────────────────────────────
 interface EditableFieldProps {
@@ -329,22 +328,8 @@ export default function MisDatosPage() {
 
   // ── Main view ─────────────────────────────────────────────────────────────
   return (
-    <div className="relative max-w-2xl mx-auto space-y-4">
-
-      {/* Background: grid + animated squares */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-            opacity: 0.4,
-          }}
-        />
-        <SquareField />
-      </div>
-
-      <div className="relative" style={{ zIndex: 1 }}>
+    <div className="max-w-2xl mx-auto space-y-4">
+      <div>
 
         {/* ── Header (UNTOUCHED: title + subtitle) ─────────────────────────── */}
         <motion.div

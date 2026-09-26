@@ -7,6 +7,7 @@ import { MODULE_ICONS } from '@/lib/icons'
 import { Bot, Sun, Moon, BarChart3 } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useState, useEffect } from 'react'
+import SquareField from '@/components/ui/SquareField'
 
 // ─── Sidebar structure ────────────────────────────────────────────────────────
 const NAV_SECTIONS = [
@@ -110,7 +111,7 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
         {/* Logo + project name */}
         <div className="px-4 pt-5 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <Link href="/" className="flex items-center gap-3 mb-3">
-            <img src={dark ? '/whiteLogo.png' : '/favicon.ico'} alt="Twiness" className="h-8 w-auto" />
+            <img src={dark ? '/logo-white.png' : '/logo-black.png'} alt="Twiness" className="h-8 w-auto" />
             <span className="text-2xl font-black tracking-tight" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-sora)' }}>
               Twiness
             </span>
@@ -256,13 +257,30 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
       </div>
 
       {/* Main content */}
-      <div className="animated-bg md:ml-52 min-h-screen">
+      <div className="animated-bg md:ml-52 min-h-screen" style={{ position: 'relative' }}>
+
+        {/* Global background: grid + animated squares — all subpages except Inicio */}
+        {pathname !== '/proyecto' && (
+          <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)',
+                backgroundSize: '60px 60px',
+                opacity: 0.4,
+              }}
+            />
+            <SquareField />
+          </div>
+        )}
+
         <motion.div
           key={pathname}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="px-6 py-[50px]"
+          className="relative px-6 py-[50px]"
+          style={{ zIndex: 1 }}
         >
           {children}
         </motion.div>
