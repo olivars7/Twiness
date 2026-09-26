@@ -296,7 +296,7 @@ export default function ZonaEstrategicaPage() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black flex items-center gap-2.5" style={{ color: '#000000' }}>
+            <h1 className="text-2xl flex items-center gap-2.5" style={{ fontFamily: '"Playfair Display","Georgia","Times New Roman",serif', fontWeight: 700, fontStyle: 'italic', color: 'var(--color-text)' }}>
               <MapPin size={24} strokeWidth={2.2} />
               Zona estratégica
             </h1>
@@ -392,14 +392,15 @@ export default function ZonaEstrategicaPage() {
         className="card rounded-2xl p-5 space-y-3"
       >
         <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Alertas y cómo resolverlas</p>
-        {alerts.length === 0 && <p className="text-sm text-emerald-600">Sin riesgos críticos detectados en esta zona.</p>}
+        {alerts.length === 0 && <p className="text-sm" style={{ color: '#16a34a' }}>Sin riesgos críticos detectados en esta zona.</p>}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {alerts.map((a, i) => {
             const AIcon = a.icon
+            const isRed = a.color.includes('red')
             return (
               <div key={i} className="flex gap-3 rounded-xl border p-4"
-                style={a.color.includes('red') ? { borderColor: '#fca5a5', background: '#fef2f2' } : { borderColor: '#fde68a', background: '#fffbeb' }}>
-                <AIcon size={15} strokeWidth={2} className="shrink-0 mt-0.5" style={{ color: a.color.includes('red') ? '#dc2626' : '#d97706' }} />
+                style={{ borderColor: isRed ? 'var(--color-border-strong)' : 'var(--color-border)', background: 'var(--color-card)' }}>
+                <AIcon size={15} strokeWidth={2} className="shrink-0 mt-0.5" style={{ color: isRed ? '#ef4444' : '#f59e0b' }} />
                 <div>
                   <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{a.text}</p>
                   <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{a.fix}</p>
@@ -408,13 +409,13 @@ export default function ZonaEstrategicaPage() {
             )
           })}
           {wins.length > 0 && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:col-span-2">
-              <p className="text-sm font-semibold text-emerald-700 mb-2">Puntos a tu favor</p>
+            <div className="card rounded-xl p-4 sm:col-span-2" style={{ borderColor: 'var(--color-border)' }}>
+              <p className="text-sm font-semibold mb-2" style={{ color: '#10b981' }}>Puntos a tu favor</p>
               <div className="flex flex-col gap-1">
                 {wins.map((w) => {
                   const WIcon = w.icon
                   return (
-                    <p key={w.text} className="flex items-center gap-1.5 text-sm text-emerald-700">
+                    <p key={w.text} className="flex items-center gap-1.5 text-sm" style={{ color: '#10b981' }}>
                       <WIcon size={13} strokeWidth={2.2} />
                       {w.text}
                     </p>
@@ -574,30 +575,24 @@ export default function ZonaEstrategicaPage() {
         {/* KPI cards — 3 en una fila */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Competidores */}
-          <div className="card rounded-2xl p-4"
-            style={saturation.color === 'green' ? { borderColor: '#6ee7b7', background: '#ecfdf5' } :
-                   saturation.color === 'yellow' ? { borderColor: '#fcd34d', background: '#fffbeb' } :
-                   { borderColor: '#fca5a5', background: '#fef2f2' }}>
+          <div className="card rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Competidores en radio</p>
               <InfoTooltip text="Negocios del mismo giro comercial dentro del radio seleccionado, según datos de Google Places. Solo se cuentan establecimientos activos." />
             </div>
-            <p className={`text-2xl font-black ${scoreTextColor(saturation.color === 'green' ? 80 : saturation.color === 'yellow' ? 55 : 30)}`}>
+            <p className="text-2xl font-black" style={{ color: saturation.color === 'green' ? '#10b981' : saturation.color === 'yellow' ? '#f59e0b' : '#ef4444' }}>
               {competitors.length} negocios
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>Densidad: {saturation.density} neg/km² · {saturation.label}</p>
           </div>
 
           {/* Rating promedio */}
-          <div className="card rounded-2xl p-4"
-            style={avgRating >= 4.2 ? { borderColor: '#fca5a5', background: '#fef2f2' } :
-                   avgRating >= 3.8 ? { borderColor: '#fcd34d', background: '#fffbeb' } :
-                   { borderColor: '#6ee7b7', background: '#ecfdf5' }}>
+          <div className="card rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Rating promedio de la zona</p>
               <InfoTooltip text="Promedio de estrellas de los competidores en el radio. Rating alto = mercado exigente donde la calidad es el diferenciador. Rating bajo = oportunidad de sobresalir fácilmente." />
             </div>
-            <p className={`text-2xl font-black ${avgRating >= 4.2 ? 'text-red-400' : avgRating >= 3.8 ? 'text-yellow-400' : 'text-green-400'}`}>
+            <p className="text-2xl font-black" style={{ color: avgRating >= 4.2 ? '#ef4444' : avgRating >= 3.8 ? '#f59e0b' : '#10b981' }}>
               {avgRating} ★
             </p>
             <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
@@ -606,7 +601,7 @@ export default function ZonaEstrategicaPage() {
           </div>
 
           {/* Más cercano */}
-          <div className="card rounded-2xl p-4" style={{ borderColor: '#93c5fd', background: '#eff6ff' }}>
+          <div className="card rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Competidor más cercano</p>
               <InfoTooltip text="El negocio del mismo giro que está a menor distancia lineal de tu ubicación. La distancia real puede ser mayor por la trama urbana." />
@@ -690,9 +685,13 @@ export default function ZonaEstrategicaPage() {
                   </td>
                   <td className="px-5 py-3" style={{ color: 'var(--color-text-secondary)' }}>{c.reviewCount?.toLocaleString('en-US')}</td>
                   <td className="px-5 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      c.openNow ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500 border border-gray-200'
-                    }`}>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={c.openNow
+                        ? { background: 'var(--color-card-hover)', color: '#10b981', border: '1px solid var(--color-border)' }
+                        : { background: 'var(--color-card-hover)', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }
+                      }
+                    >
                       {c.openNow ? 'Abierto' : 'Cerrado'}
                     </span>
                   </td>

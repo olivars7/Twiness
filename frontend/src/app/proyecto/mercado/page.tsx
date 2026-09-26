@@ -39,7 +39,7 @@ export default function MercadoPage() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black flex items-center gap-2.5" style={{ color: '#000000' }}>
+            <h1 className="text-2xl flex items-center gap-2.5" style={{ fontFamily: '"Playfair Display","Georgia","Times New Roman",serif', fontWeight: 700, fontStyle: 'italic', color: 'var(--color-text)' }}>
               <TrendingUp size={24} strokeWidth={2.2} />
               <span>Demanda</span>
               <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>&</span>

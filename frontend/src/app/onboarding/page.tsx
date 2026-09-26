@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { useOnboardingStore, type BusinessStatus } from '@/store/onboardingStore'
 import { useRouter } from 'next/navigation'
-import StarField from '@/components/ui/StarField'
+import SquareField from '@/components/ui/SquareField'
 import dynamic from 'next/dynamic'
 import {
   Flag, Store, Rocket, Lightbulb, Tag, PenLine, Wallet,
@@ -23,11 +23,11 @@ type Theme = 'blue' | 'purple' | 'yellow' | 'green' | 'red'
 const THEME: Record<Theme, {
   bg: string; border: string; badge: string; badgeText: string; ring: string; label: string
 }> = {
-  blue:   { bg: 'bg-blue-50',   border: 'border-blue-300',   badge: 'bg-blue-100',   badgeText: 'text-blue-700',   ring: 'focus:ring-blue-400',   label: 'Contexto' },
-  purple: { bg: 'bg-purple-50', border: 'border-purple-300', badge: 'bg-purple-100', badgeText: 'text-purple-700', ring: 'focus:ring-purple-400', label: 'Categoría' },
-  yellow: { bg: 'bg-amber-50',  border: 'border-amber-300',  badge: 'bg-amber-100',  badgeText: 'text-amber-700',  ring: 'focus:ring-amber-400',  label: 'Finanzas' },
-  green:  { bg: 'bg-emerald-50',border: 'border-emerald-300',badge: 'bg-emerald-100',badgeText: 'text-emerald-700',ring: 'focus:ring-emerald-400',label: 'Planificación' },
-  red:    { bg: 'bg-red-50',    border: 'border-red-300',    badge: 'bg-red-100',    badgeText: 'text-red-700',    ring: 'focus:ring-red-400',    label: 'Riesgos' },
+  blue:   { bg: '', border: '',   badge: '',   badgeText: '',   ring: 'focus:ring-gray-400',   label: 'Contexto' },
+  purple: { bg: '', border: '',   badge: '',   badgeText: '',   ring: 'focus:ring-gray-400',   label: 'Categoría' },
+  yellow: { bg: '', border: '',   badge: '',   badgeText: '',   ring: 'focus:ring-gray-400',   label: 'Finanzas' },
+  green:  { bg: '', border: '',   badge: '',   badgeText: '',   ring: 'focus:ring-gray-400',   label: 'Planificación' },
+  red:    { bg: '', border: '',   badge: '',   badgeText: '',   ring: 'focus:ring-gray-400',   label: 'Riesgos' },
 }
 
 // ─── Variantes de animación (slide) ──────────────────────────────────────────
@@ -39,41 +39,40 @@ const variants = {
 const spring = { type: 'spring' as const, stiffness: 280, damping: 28 }
 
 // ─── Helpers de estilos por tema ──────────────────────────────────────────────
-function inputCls(theme: Theme) {
-  return `w-full rounded-xl px-4 py-3 text-sm transition focus:outline-none focus:ring-2 ${THEME[theme].ring} field-input placeholder:text-[color:var(--color-text-muted)]`
+function inputCls(_theme: Theme) {
+  return `w-full rounded-xl px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-gray-300 field-input placeholder:text-[color:var(--color-text-muted)]`
 }
-function optionBtn(theme: Theme, selected: boolean) {
+function optionBtn(_theme: Theme, selected: boolean) {
   return `flex flex-col items-center gap-2 px-4 py-4 rounded-2xl border-2 text-sm font-medium transition-colors
     ${selected
-      ? `${THEME[theme].border} ${THEME[theme].bg} ${THEME[theme].badgeText}`
-      : 'border-[color:var(--color-border)] bg-[color:var(--color-card)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-border-strong)]'}`
+      ? 'border-gray-900 bg-gray-50 text-gray-900'
+      : 'border-[color:var(--color-border)] bg-white text-[color:var(--color-text-secondary)] hover:border-gray-400'}`
 }
-function chipBtn(theme: Theme, selected: boolean) {
+function chipBtn(_theme: Theme, selected: boolean) {
   return `py-2.5 px-3 rounded-xl border text-sm font-medium transition text-left
     ${selected
-      ? `${THEME[theme].border} ${THEME[theme].bg} ${THEME[theme].badgeText}`
-      : 'border-[color:var(--color-border)] bg-[color:var(--color-card)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-border-strong)]'}`
+      ? 'border-gray-900 bg-gray-50 text-gray-900'
+      : 'border-[color:var(--color-border)] bg-white text-[color:var(--color-text-secondary)] hover:border-gray-400'}`
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 interface NavProps { onBack?: () => void; onNext: () => void; canNext: boolean; isLast?: boolean }
 function Nav({ onBack, onNext, canNext, isLast }: NavProps) {
-  // On the last step, always allow proceeding to results
   const enabled = isLast ? true : canNext
   return (
     <div className="flex gap-3 mt-8">
       {onBack && (
         <button onClick={onBack}
           className="flex-1 py-3 rounded-xl text-sm font-medium transition"
-          style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)', background: 'var(--color-card)' }}>
+          style={{ border: '1px solid #e5e7eb', color: '#6b7280', background: '#fff' }}>
           ← Atrás
         </button>
       )}
       <button onClick={onNext} disabled={!enabled}
         className="flex-1 py-3 rounded-xl text-sm font-semibold transition"
         style={enabled
-          ? { background: 'var(--color-accent)', color: 'var(--color-accent-fg)' }
-          : { background: 'var(--color-border)', color: 'var(--color-text-muted)', cursor: 'not-allowed' }
+          ? { background: '#0f0f10', color: '#fff' }
+          : { background: '#e5e7eb', color: '#9ca3af', cursor: 'not-allowed' }
         }>
         {isLast ? 'Ver resultados →' : 'Continuar →'}
       </button>
@@ -83,13 +82,25 @@ function Nav({ onBack, onNext, canNext, isLast }: NavProps) {
 
 // ─── Wrappers de label y hint ─────────────────────────────────────────────────
 function Label({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-2xl font-black leading-snug" style={{ color: 'var(--color-text)' }}>{children}</h2>
+  return (
+    <h2
+      className="text-2xl leading-snug tracking-tight"
+      style={{
+        fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif',
+        fontWeight: 700,
+        fontStyle: 'italic',
+        color: '#0f0f10',
+      }}
+    >
+      {children}
+    </h2>
+  )
 }
 function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>{children}</p>
+  return <p className="text-sm mt-1.5" style={{ color: '#6b7280' }}>{children}</p>
 }
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>{children}</p>
+  return <p className="text-xs font-medium mb-1.5" style={{ color: '#6b7280' }}>{children}</p>
 }
 
 // ─── MoneyInput — campo dinero con prefijo $ verde y formato con comas ────────
@@ -120,16 +131,15 @@ function MoneyInput({ theme, placeholder, value, onChange }: {
 }
 
 // ─── Wrapper de carta con tema ────────────────────────────────────────────────
-function StepCard({ theme, icon, badgeLabel, children }: {
+function StepCard({ theme: _theme, icon, badgeLabel, children }: {
   theme: Theme; icon: React.ReactNode; badgeLabel: string; children: React.ReactNode
 }) {
-  const t = THEME[theme]
   return (
-    <div className={`w-full border-2 rounded-3xl overflow-hidden ${t.bg} ${t.border}`}>
+    <div className="w-full rounded-3xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
       <div className="px-6 pt-7 pb-2">
         <div className="flex items-center justify-between mb-5">
-          <span className="flex items-center">{icon}</span>
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${t.badge} ${t.badgeText}`}>
+          <span className="flex items-center" style={{ color: '#6b7280' }}>{icon}</span>
+          <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ background: '#f3f4f6', color: '#6b7280' }}>
             {badgeLabel}
           </span>
         </div>
@@ -280,10 +290,10 @@ function ProductBlock({
   }
 
   return (
-    <div className="rounded-2xl px-4 py-4 flex flex-col gap-3" style={{ border: '1px solid #f59e0b50', background: '#f59e0b08' }}>
+    <div className="rounded-2xl px-4 py-4 flex flex-col gap-3" style={{ border: '1px solid #e5e7eb', background: '#f9fafb' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#d97706' }}>Producto {num}</p>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#374151' }}>Producto {num}</p>
           {num === 1 && (
             <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>(requerido)</span>
           )}
@@ -915,8 +925,17 @@ export default function OnboardingPage() {
   const StepComponent = steps[currentStep]
 
   return (
-    <main ref={mainRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 overflow-hidden" style={{ background: '#ffffff', color: 'var(--color-text)' }}>
-      <StarField />
+    <main ref={mainRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 py-16 overflow-hidden" style={{ background: '#fafafa', color: 'var(--color-text)' }}>
+      {/* Grid lines */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(var(--color-border, #e5e7eb) 1px, transparent 1px), linear-gradient(90deg, var(--color-border, #e5e7eb) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+          opacity: 0.5,
+        }}
+      />
+      <SquareField />
 
       {/* Progress dots */}
       <div className="flex gap-1.5 mb-10">

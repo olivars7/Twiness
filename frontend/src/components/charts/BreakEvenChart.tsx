@@ -71,6 +71,14 @@ function SpecialDot(props: any) {
   )
 }
 
+// ─── Format MXN ───────────────────────────────────────────────────────────────
+function fmtMXN(n: number): string {
+  const abs = Math.abs(n)
+  if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(1)}M MXN`
+  if (abs >= 1_000) return `$${(abs / 1_000).toFixed(0)}k MXN`
+  return `$${abs.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN`
+}
+
 // ─── Custom tooltip ───────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }: {
   active?: boolean
@@ -79,7 +87,6 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload || payload.length === 0) return null
 
-  // Filtra solo las series principales (ignora los puntos especiales ocultos)
   const main = payload.filter(p => p.name === 'Ingresos' || p.name === 'Costo Total')
   if (main.length < 2) return null
 
@@ -95,17 +102,17 @@ function CustomTooltip({ active, payload, label }: {
         border: '1px solid var(--color-border)',
         borderRadius: 10,
         padding: '10px 14px',
-        minWidth: 180,
+        minWidth: 200,
       }}
     >
       <p className="text-xs font-bold mb-2" style={{ color: 'var(--color-text)' }}>
-        {typeof label === 'number' ? label.toLocaleString() : label} unidades
+        {typeof label === 'number' ? label.toLocaleString('es-MX') : label} unidades
       </p>
       {main.map(p => (
         <div key={p.name} className="flex justify-between gap-6 text-xs mb-1">
           <span style={{ color: 'var(--color-text-secondary)' }}>{p.name}</span>
           <span className="font-semibold" style={{ color: p.color }}>
-            ${p.value.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+            {fmtMXN(p.value)}
           </span>
         </div>
       ))}
@@ -117,7 +124,7 @@ function CustomTooltip({ active, payload, label }: {
           {positive ? 'Utilidad' : 'Pérdida'}
         </span>
         <span style={{ color: positive ? '#16a34a' : '#dc2626' }}>
-          {positive ? '+' : '−'}${Math.abs(utilidad).toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+          {positive ? '+' : '−'}{fmtMXN(Math.abs(utilidad))}
         </span>
       </div>
     </div>
@@ -296,7 +303,7 @@ export default function BreakEvenChart({
           }}
         >
           <div className="rounded-xl px-3 py-3 mb-3 space-y-2.5 text-xs leading-relaxed"
-            style={{ background: 'var(--color-surface, #f7f8fa)', border: '1px solid var(--color-border)' }}
+            style={{ background: 'var(--color-card-hover)', border: '1px solid var(--color-border)' }}
           >
             {/* Líneas */}
             <div className="grid grid-cols-2 gap-2">
@@ -316,16 +323,16 @@ export default function BreakEvenChart({
 
             {/* Cruce + zonas en una fila */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-lg p-2" style={{ background: '#6366f112', border: '1px solid #6366f130' }}>
-                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#6366f1' }}>Punto BE ●</p>
+              <div className="rounded-lg p-2" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#818cf8' }}>Punto BE ●</p>
                 <p style={{ color: 'var(--color-text-secondary)' }}>Donde se cruzan: ni ganas ni pierdes.</p>
               </div>
-              <div className="rounded-lg p-2" style={{ background: '#ef444410', border: '1px solid #ef444430' }}>
-                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#dc2626' }}>Zona roja ◀</p>
+              <div className="rounded-lg p-2" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#f87171' }}>Zona roja ◀</p>
                 <p style={{ color: 'var(--color-text-secondary)' }}>Pocas ventas, el negocio pierde.</p>
               </div>
-              <div className="rounded-lg p-2" style={{ background: '#16a34a10', border: '1px solid #16a34a30' }}>
-                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#16a34a' }}>Zona verde ▶</p>
+              <div className="rounded-lg p-2" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+                <p className="font-semibold text-[10px] mb-0.5" style={{ color: '#34d399' }}>Zona verde ▶</p>
                 <p style={{ color: 'var(--color-text-secondary)' }}>Ventas suficientes, hay ganancia.</p>
               </div>
             </div>
@@ -354,12 +361,18 @@ export default function BreakEvenChart({
           <XAxis
             dataKey="units"
             tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }}
+            tickFormatter={(v) => v.toLocaleString('es-MX')}
             label={{ value: 'Unidades / mes', position: 'insideBottom', offset: -12, fill: 'var(--color-text-muted)', fontSize: 10 }}
           />
           <YAxis
             tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }}
-            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-            width={48}
+            tickFormatter={(v) => {
+              const abs = Math.abs(v)
+              if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(1)}M`
+              if (abs >= 1_000) return `$${(abs / 1_000).toFixed(0)}k`
+              return `$${abs}`
+            }}
+            width={52}
           />
 
           <Tooltip content={<CustomTooltip />} />

@@ -2,21 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { MODULE_ICONS } from '@/lib/icons'
-import { Bot } from 'lucide-react'
+import { Bot, Sun, Moon } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useState, useEffect } from 'react'
 
 // ─── Sidebar structure ────────────────────────────────────────────────────────
 const NAV_SECTIONS = [
-  {
-    name: 'Perfil',
-    color: '#6b6b78',
-    items: [
-      { href: '/proyecto/mis-datos', key: 'mis-datos', label: 'Mis Datos' },
-    ],
-  },
   {
     name: 'Análisis',
     color: '#3b82f6',
@@ -41,11 +34,10 @@ const NAV_SECTIONS = [
   },
 ] as const
 
-// flat list still needed for active-check
-const ALL_HREFS = NAV_SECTIONS.flatMap(s => s.items.map(i => i.href))
-
-// ─── Read real data from localStorage (same key as mis-datos) ─────────────────
+// ─── Read real data from localStorage ─────────────────────────────────────────
 const LS_KEY = 'viabl_business_data_v1'
+const DM_KEY = 'viabl_dark_mode'
+
 function readLS() {
   if (typeof window === 'undefined') return {}
   try {
@@ -54,12 +46,55 @@ function readLS() {
   } catch { return {} }
 }
 
+// ─── Dark mode toggle button ──────────────────────────────────────────────────
+function DarkToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+  return (
+    <motion.button
+      onClick={onToggle}
+      whileTap={{ scale: 0.88 }}
+      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0"
+      style={{
+        background: dark ? '#f0f0f4' : '#0f0f10',
+        color: dark ? '#0f0f10' : '#f0f0f4',
+        border: dark ? '1px solid #3a3a46' : '1px solid #2a2a32',
+      }}
+      title={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={dark ? 'sun' : 'moon'}
+          initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+          animate={{ rotate: 0,   opacity: 1, scale: 1 }}
+          exit={{    rotate:  90, opacity: 0, scale: 0.6 }}
+          transition={{ duration: 0.22, ease: 'easeInOut' }}
+          className="flex items-center justify-center"
+        >
+          {dark ? <Sun size={14} strokeWidth={2} /> : <Moon size={14} strokeWidth={2} />}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
+  )
+}
+
 export default function ProyectoLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const storeData = useOnboardingStore((s) => s.data)
 
-  // Prefer localStorage (persisted by mis-datos page) over in-memory store
   const [lsData, setLsData] = useState<Record<string, string>>({})
+  const [dark, setDark] = useState(false)
+
+  // Hydrate dark mode from localStorage
+  useEffect(() => {
+    const saved = window.localStorage.getItem(DM_KEY)
+    if (saved === 'true') setDark(true)
+  }, [])
+
+  // Apply / remove .dark class on <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+    window.localStorage.setItem(DM_KEY, String(dark))
+  }, [dark])
+
   useEffect(() => { setLsData(readLS()) }, [pathname])
 
   const merged = { ...storeData, ...lsData }
@@ -89,8 +124,9 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
           }
         </div>
 
-        {/* Hub link */}
-        <div className="px-2 pt-3 pb-1">
+        {/* Hub link + Mis Datos — grouped, no section header */}
+        <div className="px-2 pt-3 pb-1 flex flex-col gap-0.5">
+          {/* Inicio */}
           {(() => {
             const isActive = pathname === '/proyecto'
             const Icon = MODULE_ICONS['home']
@@ -99,7 +135,7 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
                 href="/proyecto"
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors"
                 style={isActive
-                  ? { background: '#000000', color: '#e2e8f0', fontWeight: 600 }
+                  ? { background: '#000000', color: '#ffffff', fontWeight: 600 }
                   : { color: 'var(--color-text-secondary)' }
                 }
                 onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--color-card-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text)' } }}
@@ -107,6 +143,26 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
               >
                 <Icon size={14} strokeWidth={isActive ? 2.2 : 1.75} className="shrink-0" />
                 <span className="truncate text-xs font-semibold">Inicio</span>
+              </Link>
+            )
+          })()}
+          {/* Mis Datos — directly below Inicio */}
+          {(() => {
+            const isActive = pathname === '/proyecto/mis-datos'
+            const Icon = MODULE_ICONS['mis-datos']
+            return (
+              <Link
+                href="/proyecto/mis-datos"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                style={isActive
+                  ? { background: '#000000', color: '#ffffff', fontWeight: 600 }
+                  : { color: 'var(--color-text-secondary)' }
+                }
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--color-card-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text)' } }}
+                onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = ''; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' } }}
+              >
+                <Icon size={13} strokeWidth={isActive ? 2.2 : 1.75} className="shrink-0" />
+                <span className="truncate">Mis Datos</span>
               </Link>
             )
           })()}
@@ -131,16 +187,14 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
               {section.items.map(({ href, key, label }) => {
                 const isActive = pathname === href
                 const Icon = MODULE_ICONS[key]
-                // Active: black bg, light-tinted color text per section
-                const lightColor = section.color + 'e0'  // same hue but we use a lighter tint inline
                 return (
                   <Link
                     key={href}
                     href={href}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors ml-1"
                     style={isActive
-                      ? { background: '#000000', color: lightColor, fontWeight: 600, borderLeft: `2px solid ${section.color}` }
-                      : { color: 'var(--color-text-secondary)', borderLeft: '2px solid transparent' }
+                      ? { background: '#000000', color: '#ffffff', fontWeight: 600 }
+                      : { color: 'var(--color-text-secondary)' }
                     }
                     onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'var(--color-card-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text)' } }}
                     onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = ''; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)' } }}
@@ -170,11 +224,14 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
         </div>
       </aside>
 
-      {/* ── Floating action buttons — top-right, tight margin ───────────────── */}
+      {/* ── Floating action buttons — top-right ─────────────────────────────── */}
       <div
         className="fixed top-[5px] right-[5px] z-30 flex items-center gap-1.5 rounded-xl px-1.5 py-1"
         style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', boxShadow: '0 4px 16px 0 rgb(0 0 0 / 0.18), 0 1px 4px 0 rgb(0 0 0 / 0.10)' }}
       >
+        {/* Dark mode toggle */}
+        <DarkToggle dark={dark} onToggle={() => setDark(d => !d)} />
+
         <Link
           href="/proyecto/agente"
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors"
@@ -196,7 +253,7 @@ export default function ProyectoLayout({ children }: { children: React.ReactNode
         </Link>
       </div>
 
-      {/* Main content — animated bg, offset sidebar */}
+      {/* Main content */}
       <div className="animated-bg md:ml-52 min-h-screen">
         <motion.div
           key={pathname}

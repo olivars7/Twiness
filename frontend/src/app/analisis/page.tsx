@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import StarField from '@/components/ui/StarField'
+import SquareField from '@/components/ui/SquareField'
 import { MapPin, Swords, DollarSign, TrendingUp, BarChart3, FileText, MessageSquare, type LucideIcon } from 'lucide-react'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -22,48 +22,16 @@ interface CardData {
   insight: string
 }
 
-// ─── Paleta por tema ──────────────────────────────────────────────────────────
+// ─── Paleta por tema (neutral — sin colores, solo etiqueta diferente) ─────────
 
 const THEME: Record<CardData['theme'], {
-  bg: string; border: string; badge: string; badgeText: string
-  valueTxt: string; detailBg: string; detailBorder: string
-  colorLabel: string; divider: string
+  colorLabel: string
 }> = {
-  green: {
-    bg: 'bg-green-950', border: 'border-green-700',
-    badge: 'bg-green-900', badgeText: 'text-green-400',
-    valueTxt: 'text-green-400', detailBg: 'bg-green-900/40',
-    detailBorder: 'border-green-800', colorLabel: 'Oportunidad',
-    divider: 'border-green-800',
-  },
-  yellow: {
-    bg: 'bg-yellow-950', border: 'border-yellow-700',
-    badge: 'bg-yellow-900', badgeText: 'text-yellow-400',
-    valueTxt: 'text-yellow-400', detailBg: 'bg-yellow-900/40',
-    detailBorder: 'border-yellow-800', colorLabel: 'Precaución',
-    divider: 'border-yellow-800',
-  },
-  red: {
-    bg: 'bg-red-950', border: 'border-red-700',
-    badge: 'bg-red-900', badgeText: 'text-red-400',
-    valueTxt: 'text-red-400', detailBg: 'bg-red-900/40',
-    detailBorder: 'border-red-800', colorLabel: 'Riesgo',
-    divider: 'border-red-800',
-  },
-  blue: {
-    bg: 'bg-blue-950', border: 'border-blue-700',
-    badge: 'bg-blue-900', badgeText: 'text-blue-400',
-    valueTxt: 'text-blue-400', detailBg: 'bg-blue-900/40',
-    detailBorder: 'border-blue-800', colorLabel: 'Sugerencia',
-    divider: 'border-blue-800',
-  },
-  purple: {
-    bg: 'bg-purple-950', border: 'border-purple-700',
-    badge: 'bg-purple-900', badgeText: 'text-purple-400',
-    valueTxt: 'text-purple-400', detailBg: 'bg-purple-900/40',
-    detailBorder: 'border-purple-800', colorLabel: 'Innovación',
-    divider: 'border-purple-800',
-  },
+  green:  { colorLabel: 'Oportunidad' },
+  yellow: { colorLabel: 'Precaución' },
+  red:    { colorLabel: 'Riesgo' },
+  blue:   { colorLabel: 'Sugerencia' },
+  purple: { colorLabel: 'Análisis' },
 }
 
 // ─── Datos de análisis (mock) ─────────────────────────────────────────────────
@@ -204,19 +172,58 @@ export default function AnalisisPage() {
     exit:   (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   }
 
+  // ── Navy blue palette ──────────────────────────────────────────────────────
+  const navy = {
+    bg:          '#0a1628',
+    border:      '#1e3a5f',
+    cardBg:      'rgba(10,22,40,0.92)',
+    iconBg:      '#0f1f38',
+    iconColor:   '#93c5fd',
+    titleColor:  '#e2eeff',
+    valueColor:  '#93c5fd',
+    labelColor:  '#4a7abf',
+    valueText:   '#bfdbfe',
+    divider:     '#1a3050',
+    insightBg:   '#0d1e35',
+    insightBdr:  '#1e3a5f',
+    muted:       '#3d6494',
+    badgeBg:     '#0f2040',
+    badgeColor:  '#60a5fa',
+    prevBtn:     { bg: '#0f1f38', border: '#1e3a5f', color: '#93c5fd' },
+    nextBtn:     { bg: '#1e3a5f', color: '#e2eeff' },
+    lastBtn:     { bg: '#3b82f6', color: '#fff' },
+    gridColor:   '#0f2040',
+    squareColor: '#1e3a5f',
+    progressActive: '#60a5fa',
+    progressDone:   '#1e40af',
+    progressIdle:   '#0f2040',
+    uiBg:        'rgba(10,22,40,0.85)',
+    uiBorder:    '#1e3a5f',
+    uiColor:     '#60a5fa',
+  }
+
   return (
     <main
-      className="relative h-screen text-white flex flex-col overflow-hidden"
-      style={{ background: '#030712' }}
+      className="relative h-screen flex flex-col overflow-hidden"
+      style={{ background: navy.bg, color: navy.titleColor }}
     >
-      <StarField />
+      {/* Grid lines — navy */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(${navy.gridColor} 1px, transparent 1px), linear-gradient(90deg, ${navy.gridColor} 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
+          opacity: 0.7,
+        }}
+      />
+      {/* SquareField with navy color override via canvas */}
+      <SquareField />
 
       {/* ── Fixed top-right: progress + skip ────────────────────────────────── */}
       <div className="fixed top-4 right-4 z-30 flex items-center gap-2">
-        {/* Progress dots */}
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
+          style={{ background: navy.uiBg, border: `1px solid ${navy.uiBorder}`, backdropFilter: 'blur(8px)' }}
         >
           <div className="flex gap-1.5">
             {CARDS.map((_, i) => (
@@ -225,36 +232,40 @@ export default function AnalisisPage() {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === index ? 20 : 6,
-                  background: i === index ? '#60a5fa' : i < index ? '#1e40af' : '#374151',
+                  background: i === index ? navy.progressActive : i < index ? navy.progressDone : navy.progressIdle,
                 }}
               />
             ))}
           </div>
-          <span className="text-xs font-medium" style={{ color: '#6b7280' }}>
+          <span className="text-xs font-medium" style={{ color: navy.muted }}>
             {index + 1}/{CARDS.length}
           </span>
         </div>
 
-        {/* Skip button */}
         <button
           onClick={() => router.push('/proyecto')}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af', backdropFilter: 'blur(8px)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.10)'; (e.currentTarget as HTMLElement).style.color = '#e5e7eb' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#9ca3af' }}
+          style={{ background: navy.uiBg, border: `1px solid ${navy.uiBorder}`, color: navy.labelColor, backdropFilter: 'blur(8px)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = navy.uiColor }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = navy.labelColor }}
         >
           Saltar al dashboard →
         </button>
       </div>
 
       {/* Title */}
-      <div className="text-center pt-10 pb-4 shrink-0">
-        <h1 className="text-3xl font-black text-white tracking-tight">Resultados del análisis</h1>
-        <p className="text-xs text-gray-500 mt-1.5">Revisa cada módulo antes de ver tu proyecto completo</p>
+      <div className="text-center pt-8 pb-2 shrink-0 relative z-10">
+        <h1
+          className="text-3xl tracking-tight leading-tight"
+          style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontWeight: 700, fontStyle: 'italic', color: navy.titleColor }}
+        >
+          Resultados del análisis
+        </h1>
+        <p className="text-xs mt-1" style={{ color: navy.muted }}>Revisa cada módulo antes de ver tu proyecto completo</p>
       </div>
 
-      {/* Card area — no scroll */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-6 overflow-hidden">
+      {/* Card area — no scroll, compact */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-4 overflow-hidden relative z-10">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={card.id}
@@ -264,68 +275,75 @@ export default function AnalisisPage() {
             animate="center"
             exit="exit"
             transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-            className={`w-full max-w-xl border-2 rounded-3xl flex flex-col ${t.bg} ${t.border}`}
+            className="w-full max-w-xl rounded-3xl flex flex-col"
+            style={{ background: navy.cardBg, border: `1.5px solid ${navy.border}`, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
           >
             {/* ── Encabezado ───────────────────────────────────────────── */}
-            <div className="flex items-start justify-between px-8 pt-8 pb-6">
-              <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    {(() => { const Icon = card.icon; return <Icon size={22} strokeWidth={1.75} className="text-white" /> })()}
-                  </div>
-                  <div>
-                  <p className="text-2xl font-black text-white leading-tight">{card.title}</p>
-                  <p className={`text-base font-bold mt-0.5 ${t.valueTxt}`}>{card.value}</p>
+            <div className="flex items-start justify-between px-6 pt-6 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" style={{ background: navy.iconBg }}>
+                  {(() => { const Icon = card.icon; return <Icon size={18} strokeWidth={1.75} style={{ color: navy.iconColor }} /> })()}
+                </div>
+                <div>
+                  <p
+                    className="text-xl leading-tight tracking-tight"
+                    style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontWeight: 700, fontStyle: 'italic', color: navy.titleColor }}
+                  >
+                    {card.title}
+                  </p>
+                  <p className="text-xs font-semibold mt-0.5" style={{ color: navy.valueColor }}>{card.value}</p>
                 </div>
               </div>
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ml-4 ${t.badge} ${t.badgeText}`}>
+              <span className="text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ml-4" style={{ background: navy.badgeBg, color: navy.badgeColor }}>
                 {t.colorLabel}
               </span>
             </div>
 
             {/* ── Resumen ───────────────────────────────────────────────── */}
-            <p className="text-sm text-gray-300 leading-relaxed px-8 pb-6">
+            <p className="text-xs leading-relaxed px-6 pb-4" style={{ color: navy.valueText }}>
               {card.summary}
             </p>
 
             {/* ── Divisor ───────────────────────────────────────────────── */}
-            <div className={`border-t mx-8 ${t.divider}`} />
+            <div className="border-t mx-6" style={{ borderColor: navy.divider }} />
 
             {/* ── Datos ─────────────────────────────────────────────────── */}
-            <div className="px-8 py-6 space-y-4">
+            <div className="px-6 py-3 space-y-2.5">
               {card.details.map(d => (
-                <div key={d.label} className="flex items-start justify-between gap-6">
-                  <p className="text-xs text-gray-500 font-medium shrink-0 w-44 leading-relaxed">{d.label}</p>
-                  <p className="text-sm text-gray-200 text-right leading-relaxed">{d.value}</p>
+                <div key={d.label} className="flex items-start justify-between gap-4">
+                  <p className="text-xs font-medium shrink-0 w-40 leading-relaxed" style={{ color: navy.muted }}>{d.label}</p>
+                  <p className="text-xs text-right leading-relaxed" style={{ color: navy.valueText }}>{d.value}</p>
                 </div>
               ))}
             </div>
 
             {/* ── Divisor ───────────────────────────────────────────────── */}
-            <div className={`border-t mx-8 ${t.divider}`} />
+            <div className="border-t mx-6" style={{ borderColor: navy.divider }} />
 
             {/* ── Insight IA ────────────────────────────────────────────── */}
-            <div className={`mx-8 my-6 rounded-2xl border p-4 ${t.detailBg} ${t.detailBorder}`}>
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <MessageSquare size={12} strokeWidth={2} className="text-gray-500" />
-                <p className="text-xs text-gray-500 font-medium">Análisis IA</p>
+            <div className="mx-6 my-3 rounded-xl border p-3" style={{ background: navy.insightBg, borderColor: navy.insightBdr }}>
+              <div className="flex items-center gap-1.5 mb-1">
+                <MessageSquare size={11} strokeWidth={2} style={{ color: navy.muted }} />
+                <p className="text-[10px] font-medium" style={{ color: navy.muted }}>Análisis IA</p>
               </div>
-              <p className="text-sm text-gray-200 leading-relaxed">{card.insight}</p>
+              <p className="text-xs leading-relaxed" style={{ color: navy.valueText }}>{card.insight}</p>
             </div>
 
             {/* ── Navegación ────────────────────────────────────────────── */}
-            <div className="flex gap-2 px-8 pb-8">
+            <div className="flex gap-2 px-6 pb-5">
               {!isFirst && (
                 <button
                   onClick={goPrev}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-400 text-sm font-medium hover:bg-gray-800 transition-colors"
+                  className="flex-1 py-2 rounded-xl text-xs font-medium transition-colors"
+                  style={{ background: navy.prevBtn.bg, border: `1px solid ${navy.prevBtn.border}`, color: navy.prevBtn.color }}
                 >
                   ← Anterior
                 </button>
               )}
               <button
                 onClick={goNext}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors
-                  ${isLast ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-200'}`}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors"
+                style={isLast ? navy.lastBtn : navy.nextBtn}
               >
                 {isLast ? 'Ver proyecto →' : 'Siguiente →'}
               </button>

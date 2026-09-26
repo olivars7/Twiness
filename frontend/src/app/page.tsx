@@ -9,6 +9,7 @@ import {
   Coffee, Scissors, Utensils, Dumbbell, CheckCircle2, XCircle,
 } from 'lucide-react'
 import SquareField from '@/components/ui/SquareField'
+import { useOnboardingStore } from '@/store/onboardingStore'
 
 // ─── localStorage ─────────────────────────────────────────────────────────────
 const LS_KEY = 'viabl_business_data_v1'
@@ -40,10 +41,10 @@ const PROFILES = [
 
 // ─── Tipos de negocio ──────────────────────────────────────────────────────────
 const BUSINESS_TYPES = [
-  { icon: Coffee,    label: 'Cafetería',   color: '#f59e0b', emoji: '☕', tagline: 'El aroma que atrae clientes' },
-  { icon: Scissors,  label: 'Barbería',    color: '#8b5cf6', emoji: '✂️', tagline: 'Estilo que fideliza' },
-  { icon: Utensils,  label: 'Restaurante', color: '#ef4444', emoji: '🍽️', tagline: 'Sabor que hace regresar' },
-  { icon: Dumbbell,  label: 'Gimnasio',    color: '#3b82f6', emoji: '💪', tagline: 'Salud que genera comunidad' },
+  { icon: Coffee,    label: 'Cafetería',   color: '#f59e0b', tagline: 'El aroma que atrae clientes' },
+  { icon: Scissors,  label: 'Barbería',    color: '#8b5cf6', tagline: 'Estilo que fideliza' },
+  { icon: Utensils,  label: 'Restaurante', color: '#ef4444', tagline: 'Sabor que hace regresar' },
+  { icon: Dumbbell,  label: 'Gimnasio',    color: '#3b82f6', tagline: 'Salud que genera comunidad' },
 ]
 
 // ─── Quiz ──────────────────────────────────────────────────────────────────────
@@ -89,9 +90,9 @@ const STEPS = [
 ]
 
 const STATS = [
-  { value: '6',          label: 'Módulos de análisis' },
-  { value: '5 minutos',  label: 'Para tu primer análisis' },
-  { value: '100%',       label: 'Gratis y sin registro' },
+  { value: '6',         label: 'Herramientas de análisis incluidas' },
+  { value: '5 min',     label: 'Para tener tu primer resultado' },
+  { value: '100%',      label: 'Sin cuentas ni contraseñas' },
 ]
 
 // ─── Monitor mockup ───────────────────────────────────────────────────────────
@@ -161,12 +162,19 @@ function MonitorMockup() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const router = useRouter()
+  const { setField, setStep } = useOnboardingStore()
   const [hasProject, setHasProject]   = useState(false)
   const [projectName, setProjectName] = useState('')
   const [activeProfile, setActiveProfile] = useState<'idea' | 'existing' | null>(null)
   const [quizAnswers, setQuizAnswers]     = useState<Record<string, boolean | null>>({})
   const [quizDone, setQuizDone]           = useState(false)
   const [scrolled, setScrolled]           = useState(false)
+
+  function goToOnboardingAsExisting() {
+    setField('businessStatus', 'existente')
+    setStep(1, 1) // skip Step0 (etapa del negocio)
+    router.push('/onboarding')
+  }
 
   const currentProfile = PROFILES.find(p => p.id === activeProfile)
   const answeredCount  = Object.values(quizAnswers).filter(v => v !== null).length
@@ -206,15 +214,15 @@ export default function LandingPage() {
         className="w-full flex items-center justify-between pointer-events-auto"
         style={{
           maxWidth: scrolled ? '64rem' : '100%',
-          background: scrolled ? 'rgba(250,250,250,0.55)' : 'rgba(250,250,250,0.98)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: scrolled ? '1px solid rgba(0,0,0,0.08)' : 'none',
+          background: scrolled ? 'rgba(250,250,250,0.45)' : 'rgba(250,250,250,0.96)',
+          backdropFilter: scrolled ? 'blur(28px)' : 'blur(0px)',
+          WebkitBackdropFilter: scrolled ? 'blur(28px)' : 'blur(0px)',
+          border: scrolled ? '1px solid rgba(0,0,0,0.07)' : 'none',
           borderBottom: scrolled ? undefined : '1px solid rgba(0,0,0,0.06)',
           borderRadius: scrolled ? '1rem' : '0',
-          boxShadow: scrolled ? '0 4px 24px 0 rgb(0 0 0 / 0.07), 0 1px 2px 0 rgb(0 0 0 / 0.04)' : 'none',
-          padding: scrolled ? '12px 20px' : '12px 24px',
-          transition: 'max-width 0.35s cubic-bezier(0.16,1,0.3,1), border-radius 0.35s cubic-bezier(0.16,1,0.3,1), background 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease',
+          boxShadow: scrolled ? '0 4px 28px 0 rgb(0 0 0 / 0.06), 0 1px 2px 0 rgb(0 0 0 / 0.03)' : 'none',
+          padding: scrolled ? '10px 20px' : '12px 24px',
+          transition: 'max-width 0.35s cubic-bezier(0.16,1,0.3,1), border-radius 0.35s cubic-bezier(0.16,1,0.3,1), background 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease, border 0.35s ease, backdrop-filter 0.35s ease',
         }}
       >
         <div className="flex items-center gap-3">
@@ -242,10 +250,11 @@ export default function LandingPage() {
           <motion.button
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             onClick={() => router.push('/onboarding')}
-            className="text-xs font-semibold px-4 py-2 rounded-xl"
+            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl"
             style={{ background: '#0f0f10', color: '#fff' }}
           >
-            Empezar →
+            Empezar
+            <ArrowRight size={13} strokeWidth={2.5} />
           </motion.button>
         </div>
       </nav>
@@ -346,7 +355,7 @@ export default function LandingPage() {
                     key={p.id}
                     whileHover={{ scale: 1.04, boxShadow: `0 8px 28px 0 ${active ? p.color : '#0f0f10'}40` }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => router.push('/onboarding')}
+                    onClick={() => p.id === 'existing' ? goToOnboardingAsExisting() : router.push('/onboarding')}
                     className="flex-1 flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-bold text-sm"
                     style={{
                       background: active ? p.color : '#0f0f10',

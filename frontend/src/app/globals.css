@@ -3,37 +3,64 @@
 /* ─── Design tokens ────────────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --color-page:        #d8d8dc;   /* fondo general (gris medio-oscuro) */
-  --color-sidebar:     #ffffff;   /* sidebar blanco */
-  --color-card:        #ffffff;   /* boxes / cards */
+  --color-page:        #d8d8dc;
+  --color-sidebar:     #ffffff;
+  --color-card:        #ffffff;
   --color-card-hover:  #f5f5f7;
-  --color-input:       #f2f2f4;   /* inputs */
-  --color-card-dark:   #1a1a1c;   /* card negra para contraste */
+  --color-input:       #f2f2f4;
+  --color-card-dark:   #1a1a1c;
   --color-card-dark-border: #2e2e32;
 
   /* Borders */
-  --color-border:      #e2e2e6;
+  --color-border:        #e2e2e6;
   --color-border-strong: #c8c8d0;
 
   /* Text */
-  --color-text:        #0f0f10;   /* casi negro */
+  --color-text:           #0f0f10;
   --color-text-secondary: #6b6b78;
-  --color-text-muted:  #a3a3b0;
+  --color-text-muted:     #a3a3b0;
 
-  /* Accent — negro puro para botones activos / active state */
-  --color-accent:      #0f0f10;
-  --color-accent-fg:   #ffffff;
+  /* Accent */
+  --color-accent:    #0f0f10;
+  --color-accent-fg: #ffffff;
 
   /* Charts */
-  --chart-1:  #0f0f10;   /* negro  — serie principal */
-  --chart-2:  #8a8a96;   /* gris   — serie secundaria */
-  --chart-3:  #3b82f6;   /* azul   — info / terciaria */
-  --chart-4:  #10b981;   /* verde  — positivo */
-  --chart-5:  #f59e0b;   /* ámbar  — advertencia */
-  --chart-6:  #ef4444;   /* rojo   — riesgo */
+  --chart-1:  #0f0f10;
+  --chart-2:  #8a8a96;
+  --chart-3:  #3b82f6;
+  --chart-4:  #10b981;
+  --chart-5:  #f59e0b;
+  --chart-6:  #ef4444;
 
-  /* Sidebar width (usada en layout) */
-  --sidebar-w: 13rem;   /* 208px */
+  --sidebar-w: 13rem;
+}
+
+/* ─── Dark mode tokens ─────────────────────────────────────────────────────── */
+.dark {
+  --color-page:           #0d0d10;
+  --color-sidebar:        #111114;
+  --color-card:           #18181c;
+  --color-card-hover:     #202026;
+  --color-input:          #1e1e24;
+  --color-card-dark:      #0a0a0c;
+  --color-card-dark-border: #2a2a32;
+
+  --color-border:         #2a2a32;
+  --color-border-strong:  #3a3a46;
+
+  --color-text:           #f0f0f4;
+  --color-text-secondary: #9090a0;
+  --color-text-muted:     #5a5a6a;
+
+  --color-accent:    #f0f0f4;
+  --color-accent-fg: #0f0f10;
+
+  --chart-1:  #e0e0e8;
+  --chart-2:  #6a6a7a;
+  --chart-3:  #60a5fa;
+  --chart-4:  #34d399;
+  --chart-5:  #fbbf24;
+  --chart-6:  #f87171;
 }
 
 /* ─── Tailwind theme extension ─────────────────────────────────────────────── */
@@ -76,6 +103,9 @@
   overflow: hidden;
   background: #f0f0f2;
 }
+.dark .animated-bg {
+  background: #0d0d10;
+}
 
 .animated-bg::before,
 .animated-bg::after {
@@ -86,20 +116,30 @@
   z-index: 0;
 }
 
-/* Blob 1 — gris medio, arriba-izquierda */
+/* Blob 1 — light */
 .animated-bg::before {
   background: radial-gradient(ellipse 55% 40% at 30% 35%,  #d4d4d8 0%, transparent 70%),
               radial-gradient(ellipse 40% 50% at 70% 65%,  #e8e8ec 0%, transparent 65%),
               radial-gradient(ellipse 35% 45% at 55% 20%,  #c8c8ce 0%, transparent 60%);
   animation: blob-1 22s ease-in-out infinite;
 }
+.dark .animated-bg::before {
+  background: radial-gradient(ellipse 55% 40% at 30% 35%,  #1a1a28 0%, transparent 70%),
+              radial-gradient(ellipse 40% 50% at 70% 65%,  #12121c 0%, transparent 65%),
+              radial-gradient(ellipse 35% 45% at 55% 20%,  #16161f 0%, transparent 60%);
+}
 
-/* Blob 2 — blanco brillante + gris suave, abajo-derecha */
+/* Blob 2 — light */
 .animated-bg::after {
   background: radial-gradient(ellipse 50% 55% at 75% 70%,  #ffffff 0%, transparent 65%),
               radial-gradient(ellipse 45% 35% at 20% 75%,  #dcdce0 0%, transparent 60%),
               radial-gradient(ellipse 30% 40% at 85% 25%,  #e4e4e8 0%, transparent 55%);
   animation: blob-2 28s ease-in-out infinite;
+}
+.dark .animated-bg::after {
+  background: radial-gradient(ellipse 50% 55% at 75% 70%,  #1e1e2e 0%, transparent 65%),
+              radial-gradient(ellipse 45% 35% at 20% 75%,  #141420 0%, transparent 60%),
+              radial-gradient(ellipse 30% 40% at 85% 25%,  #181826 0%, transparent 55%);
 }
 
 /* Todos los hijos directos del contenido encima de los blobs */
@@ -132,6 +172,10 @@ html, body {
   border-radius: 1rem;
   color: #f4f4f5;
   box-shadow: 0 2px 8px 0 rgb(0 0 0 / 0.25);
+}
+.dark .dark-box {
+  background: #08080a;
+  border-color: #2a2a32;
 }
 .dark-box-muted  { color: #a1a1aa; }
 .dark-box-accent { color: #60a5fa; }

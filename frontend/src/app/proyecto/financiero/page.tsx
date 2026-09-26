@@ -51,22 +51,26 @@ function fmtCommas(raw: string): string {
 // ─── MoneyInput ───────────────────────────────────────────────────────────────
 function MoneyInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [display, setDisplay] = useState(() => fmtCommas(value))
+  const [focused, setFocused] = useState(false)
   useEffect(() => { setDisplay(fmtCommas(value)) }, [value])
 
   return (
-    <div className="flex items-center rounded-xl overflow-hidden"
-      style={{ border: '1.5px solid var(--color-border)', background: 'var(--color-input)' }}>
-      <div className="flex items-center justify-center w-9 h-9 shrink-0"
-        style={{ background: '#f0fdf4', borderRight: '1px solid var(--color-border)' }}>
-        <DollarSign size={13} strokeWidth={2.2} style={{ color: '#16a34a' }} />
-      </div>
+    <div
+      className="flex items-center gap-1"
+      style={{
+        borderBottom: `1.5px solid ${focused ? '#ffffff' : 'rgba(255,255,255,0.18)'}`,
+        transition: 'border-color 0.18s',
+        paddingBottom: 2,
+      }}
+    >
+      <DollarSign size={12} strokeWidth={2.5} style={{ color: '#16a34a', flexShrink: 0 }} />
       <input
         type="text" inputMode="decimal" value={display}
         onChange={e => { const c = e.target.value.replace(/[^0-9.]/g, ''); setDisplay(c); onChange(c) }}
-        onBlur={() => { const n = parse(display); setDisplay(fmtCommas(String(n))); onChange(String(n)) }}
-        onFocus={() => { const n = parse(display); setDisplay(isNaN(n) ? '' : String(n)) }}
-        className="flex-1 bg-transparent text-sm px-2.5 py-2 outline-none min-w-0"
-        style={{ color: 'var(--color-text)' }}
+        onBlur={() => { const n = parse(display); setDisplay(fmtCommas(String(n))); onChange(String(n)); setFocused(false) }}
+        onFocus={() => { const n = parse(display); setDisplay(isNaN(n) ? '' : String(n)); setFocused(true) }}
+        className="flex-1 bg-transparent text-sm py-1 outline-none min-w-0 font-medium"
+        style={{ color: '#f4f4f5' }}
       />
     </div>
   )
@@ -74,19 +78,25 @@ function MoneyInput({ value, onChange }: { value: string; onChange: (v: string) 
 
 // ─── PctInput ─────────────────────────────────────────────────────────────────
 function PctInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [focused, setFocused] = useState(false)
   return (
-    <div className="flex items-center rounded-xl overflow-hidden"
-      style={{ border: '1.5px solid var(--color-border)', background: 'var(--color-input)' }}>
+    <div
+      className="flex items-center gap-1"
+      style={{
+        borderBottom: `1.5px solid ${focused ? '#ffffff' : 'rgba(255,255,255,0.18)'}`,
+        transition: 'border-color 0.18s',
+        paddingBottom: 2,
+      }}
+    >
       <input
         type="number" min={0} max={100} step={0.5} value={value}
         onChange={e => onChange(e.target.value)}
-        className="flex-1 bg-transparent text-sm px-2.5 py-2 outline-none min-w-0"
-        style={{ color: 'var(--color-text)' }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className="flex-1 bg-transparent text-sm py-1 outline-none min-w-0 font-medium"
+        style={{ color: '#f4f4f5' }}
       />
-      <div className="flex items-center justify-center w-8 shrink-0 text-sm font-bold"
-        style={{ color: '#6b6b78', borderLeft: '1px solid var(--color-border)', height: '2.25rem' }}>
-        %
-      </div>
+      <span className="text-sm font-bold shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>%</span>
     </div>
   )
 }
@@ -191,8 +201,6 @@ export default function SimuladorRentabilidadPage() {
   type Fields = typeof DEFAULTS
   const [fields, setFields] = useState<Fields>(DEFAULTS)
   const [hydrated, setHydrated] = useState(false)
-  const [fromPrecios, setFromPrecios] = useState(false)
-  const [fromDemanda, setFromDemanda] = useState(false)
 
   useEffect(() => {
     const ls = readLS()
@@ -204,8 +212,6 @@ export default function SimuladorRentabilidadPage() {
     const crec     = ls.er_tasaCrecimiento       ?? ls.sim_crecimiento ?? DEFAULTS.sim_crecimiento
 
     setFields({ sim_precio: precio, sim_unidades: unidades, sim_costoVar: costoVar, sim_costosFijos: fijos, sim_inversion: inv, sim_crecimiento: crec })
-    setFromPrecios(!!ls.er_precioPromedio)
-    setFromDemanda(!!ls.er_ventasEstimadasMes)
     setHydrated(true)
   }, [])
 
@@ -243,11 +249,14 @@ export default function SimuladorRentabilidadPage() {
   const cashFlowData = projection.map(p => ({ month: `Mes ${p.mes}`, cashFlow: Math.round(p.flujoCaja), accumulated: Math.round(p.acumulado) }))
   const mesRecuperacion = projection.find(p => p.acumulado >= 0)?.mes ?? null
 
-  // Eje X: usar unidades efectivas para escalar el gráfico
+  // Eje X: intervalos estrictamente regulares (sin excepciones en la secuencia)
   const safeMaxRef = isFinite(be.unidades) ? Math.max(be.unidades, unidadesEfect) : Math.max(unidadesEfect * 2, 100)
-  const maxBE = Math.ceil(safeMaxRef * 1.8 / 100) * 100 || 1000
+  const rawStep = (safeMaxRef * 1.8 || 1000) / 10
+  const mag = Math.pow(10, Math.floor(Math.log10(Math.max(rawStep, 1))))
+  const step = ([1, 2, 5, 10].map(m => m * mag).find(s => s >= rawStep) ?? mag * 10)
+  const maxBE = step * 10
   const chartData = Array.from({ length: 11 }, (_, i) => {
-    const u = (maxBE / 10) * i
+    const u = step * i
     return { units: u, revenue: u * precio, totalCost: costosFijos + u * costoVar }
   })
 
@@ -286,8 +295,8 @@ export default function SimuladorRentabilidadPage() {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-black flex items-center gap-2.5" style={{ color: '#000000' }}>
-              <TrendingUp size={24} strokeWidth={2.2} />
+            <h1 className="text-2xl flex items-center gap-2.5" style={{ fontFamily: '"Playfair Display","Georgia","Times New Roman",serif', fontWeight: 700, fontStyle: 'italic', color: 'var(--color-text)' }}>
+              <TrendingUp size={24} strokeWidth={2} />
               Simulador de Rentabilidad
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
@@ -302,14 +311,10 @@ export default function SimuladorRentabilidadPage() {
       <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
         <div className="rounded-2xl p-4" style={{ background: '#000', border: '1px solid #1f1f1f' }}>
           {/* Header row */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center mb-3">
             <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#52525b' }}>
               Parámetros del negocio
             </p>
-            <div className="flex items-center gap-1.5">
-              {fromPrecios && <DataBadge type="dato" label="Precios" />}
-              {fromDemanda && <DataBadge type="dato" label="Demanda" />}
-            </div>
           </div>
 
           {/* 3×2 grid — todos los inputs en una sola cuadrícula */}

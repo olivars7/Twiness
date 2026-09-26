@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { MODULE_ICONS, type ModuleKey } from '@/lib/icons'
-import StarField from '@/components/ui/StarField'
+import SquareField from '@/components/ui/SquareField'
 import { ArrowRight } from 'lucide-react'
 
 // ─── Read localStorage (same key used by mis-datos + estado-resultados) ────────
@@ -174,23 +174,45 @@ export default function ProyectoHubPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="relative rounded-3xl overflow-hidden"
-        style={{ background: '#000', minHeight: 180 }}
+        style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', minHeight: 180 }}
       >
-        <StarField className="absolute inset-0 opacity-80" />
+        {/* Grid lines */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+            opacity: 0.7,
+          }}
+        />
+        <SquareField className="absolute inset-0" />
+        {/* Fade the bottom so text is legible in both themes */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(124,58,237,0.12) 60%, transparent 100%)' }}
+          style={{ background: 'linear-gradient(to top, var(--color-card) 0%, transparent 55%)' }}
+        />
+        {/* Subtle blue accent glow — top-right */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 60% 60% at 80% 0%, rgba(59,130,246,0.08) 0%, transparent 70%)' }}
         />
         <div className="relative z-10 px-7 py-8 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-5">
           <div>
-            <p className="text-[10px] font-semibold tracking-widest uppercase mb-2" style={{ color: '#60a5fa' }}>
+            <p className="text-[10px] font-semibold tracking-widest uppercase mb-2" style={{ color: '#3b82f6' }}>
               Mi Proyecto
             </p>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none">
+            <h1
+              className="text-3xl sm:text-4xl font-black tracking-tight leading-none"
+              style={{
+                fontFamily: '"Playfair Display","Georgia","Times New Roman",serif',
+                fontStyle: 'italic',
+                color: 'var(--color-text)',
+              }}
+            >
               {businessName}
             </h1>
             {(businessType || city) && (
-              <p className="text-xs mt-2.5 font-medium" style={{ color: '#94a3b8' }}>
+              <p className="text-xs mt-2.5 font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                 {[businessType, city].filter(Boolean).join(' · ')}
               </p>
             )}
@@ -198,12 +220,12 @@ export default function ProyectoHubPage() {
           <div className="shrink-0 flex flex-col items-center gap-1">
             <div
               className="w-16 h-16 rounded-full flex flex-col items-center justify-center"
-              style={{ border: '2.5px solid #f59e0b', background: 'rgba(245,158,11,0.08)' }}
+              style={{ border: '1.5px solid var(--color-border-strong)', background: 'var(--color-card-hover)' }}
             >
-              <span className="text-xl font-black text-white leading-none">—</span>
-              <span className="text-[9px] font-medium mt-0.5" style={{ color: '#fbbf24' }}>Índice</span>
+              <span className="text-xl font-black leading-none" style={{ color: 'var(--color-text)' }}>—</span>
+              <span className="text-[9px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>Índice</span>
             </div>
-            <p className="text-[9px] text-center" style={{ color: '#64748b', maxWidth: 72 }}>
+            <p className="text-[9px] text-center" style={{ color: 'var(--color-text-muted)', maxWidth: 72 }}>
               Completa módulos para calcular
             </p>
           </div>

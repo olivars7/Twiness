@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { ClipboardList, BarChart3, DollarSign, MapPin, Users, Store, Rocket, Lightbulb } from 'lucide-react'
+import { ClipboardList, BarChart3, DollarSign, MapPin, Users, Store, Rocket, Lightbulb, PenLine } from 'lucide-react'
 import { useLocalBusinessData } from '@/hooks/useLocalBusinessData'
 import { useOnboardingStore, type OnboardingData } from '@/store/onboardingStore'
+import SquareField from '@/components/ui/SquareField'
 
 // ─── Componente de campo editable inline ─────────────────────────────────────
 interface EditableFieldProps {
@@ -91,10 +92,10 @@ function EditableField({
 // ─── Sección colapsable ───────────────────────────────────────────────────────
 interface SectionProps {
   icon: React.ReactNode; title: string; badge?: string; badgeColor?: string
-  accentColor?: string; children: React.ReactNode
+  accentColor?: string; children: React.ReactNode; defaultOpen?: boolean
 }
-function Section({ icon, title, badge, badgeColor = 'bg-gray-100 text-gray-500', accentColor, children }: SectionProps) {
-  const [open, setOpen] = useState(true)
+function Section({ icon, title, badge, badgeColor = 'bg-gray-100 text-gray-500', accentColor, children, defaultOpen = false }: SectionProps & { defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="card rounded-2xl overflow-hidden"
       style={accentColor ? { borderTop: `2px solid ${accentColor}` } : {}}>
@@ -223,38 +224,40 @@ export default function MisDatosPage() {
 
   // ── 8. Vista principal ────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="relative max-w-2xl mx-auto space-y-4">
+      {/* Grid + squares background behind content */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+            opacity: 0.4,
+          }}
+        />
+        <SquareField />
+      </div>
+      <div className="relative" style={{ zIndex: 1 }}>
 
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
         className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black flex items-center gap-2.5" style={{ color: '#000000' }}>
-            <ClipboardList size={24} strokeWidth={2.2} />
+          <h1 className="text-2xl flex items-center gap-2.5" style={{ fontFamily: '"Playfair Display","Georgia","Times New Roman",serif', fontWeight: 700, fontStyle: 'italic', color: 'var(--color-text)' }}>
+            <ClipboardList size={24} strokeWidth={1.75} />
             Mis Datos
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
             Haz click en cualquier campo para editarlo. Los cambios se guardan automáticamente.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0 mt-1">
-          {statusInfo && (
-            <span className={`text-xs px-3 py-1.5 rounded-full font-semibold ${statusInfo.color}`}>
-              {statusInfo.label}
-            </span>
-          )}
-          {/* Indicador de persistencia */}
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full"
-            style={{
-              background: storageAvailable ? '#f0fdf4' : '#fef2f2',
-              color: storageAvailable ? '#15803d' : '#b91c1c',
-              border: `1px solid ${storageAvailable ? '#bbf7d0' : '#fecaca'}`,
-            }}
-          >
-            {storageAvailable ? '● Guardado localmente' : '⚠ Sin persistencia'}
-          </span>
-        </div>
+        {/* Storage indicator — plain text, no badge */}
+        <span
+          className="text-[11px] font-medium shrink-0 mt-1.5"
+          style={{ color: storageAvailable ? '#16a34a' : '#b91c1c' }}
+        >
+          {storageAvailable ? '● Guardado' : '⚠ Sin persistencia'}
+        </span>
       </motion.div>
 
       {/* Dark summary box */}
@@ -281,7 +284,7 @@ export default function MisDatosPage() {
 
       {/* ── Sección A: Identidad ──────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Section icon={<span>✏️</span>} title="Identidad del negocio" badge="A" badgeColor="bg-blue-50 text-blue-700 border border-blue-200" accentColor="#3b82f6">
+        <Section icon={<PenLine size={16} strokeWidth={1.75} />} title="Identidad del negocio" badge="A" badgeColor="bg-blue-50 text-blue-700 border border-blue-200" accentColor="#3b82f6" defaultOpen>
           <EditableField label="Nombre" fieldKey="businessName" value={data.businessName} onSave={save} placeholder="Sin nombre" />
           <EditableField label="Tipo de negocio" fieldKey="businessType" value={data.businessType} onSave={save} placeholder="Sin tipo" />
           <EditableField label="Descripción" fieldKey="businessDescription" value={data.businessDescription}
@@ -439,27 +442,27 @@ export default function MisDatosPage() {
         </Section>
       </motion.div>
 
-      {/* CTA al onboarding + borrar datos */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
-        className="pt-2 pb-6 flex flex-col items-center gap-3 text-center">
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>¿Quieres rehacer el cuestionario completo?</p>
-        <button onClick={() => router.push('/onboarding')}
-          className="text-xs px-4 py-2 rounded-lg transition"
-          style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
-          Volver al onboarding
-        </button>
-        <button
-          onClick={() => {
-            if (window.confirm('¿Borrar todos los datos guardados localmente? Esta acción no se puede deshacer.')) {
-              clearData()
-            }
-          }}
-          className="text-xs px-4 py-2 rounded-lg transition"
-          style={{ border: '1px solid #fecaca', color: '#b91c1c' }}>
-          Borrar datos locales
-        </button>
-      </motion.div>
-
+        {/* CTA al onboarding + borrar datos */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+          className="pt-2 pb-6 flex flex-col items-center gap-3 text-center">
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>¿Quieres rehacer el cuestionario completo?</p>
+          <button onClick={() => router.push('/onboarding')}
+            className="text-xs px-4 py-2 rounded-lg transition"
+            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}>
+            Volver al onboarding
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm('¿Borrar todos los datos guardados localmente? Esta acción no se puede deshacer.')) {
+                clearData()
+              }
+            }}
+            className="text-xs px-4 py-2 rounded-lg transition"
+            style={{ border: '1px solid #fecaca', color: '#b91c1c' }}>
+            Borrar datos locales
+          </button>
+        </motion.div>
+      </div>
     </div>
   )
 }
