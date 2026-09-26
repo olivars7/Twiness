@@ -56,17 +56,17 @@ const QUIZ_QUESTIONS = [
 
 // ─── Para quién ────────────────────────────────────────────────────────────────
 const FOR_YOU = [
-  '✅ Quieres validar antes de invertir',
-  '✅ Tienes un presupuesto de hasta $500k MXN',
-  '✅ Tu negocio será en Tijuana, B.C.',
-  '✅ No tienes formación financiera formal',
-  '✅ Quieres datos reales, no suposiciones',
+  'Quieres validar antes de invertir',
+  'Tienes un presupuesto de hasta $500,000 MXN',
+  'Tu negocio será en Tijuana, B.C.',
+  'No tienes formación financiera formal',
+  'Quieres datos reales, no suposiciones',
 ]
 const NOT_FOR_YOU = [
-  '❌ Ya tienes inversores institucionales',
-  '❌ Buscas financiamiento bancario formal',
-  '❌ Operas fuera de Tijuana (por ahora)',
-  '❌ Necesitas contabilidad oficial o fiscal',
+  'Ya tienes inversores institucionales',
+  'Buscas financiamiento bancario formal',
+  'Operas fuera de Tijuana (por ahora)',
+  'Necesitas contabilidad oficial o fiscal',
 ]
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -89,9 +89,9 @@ const STEPS = [
 ]
 
 const STATS = [
-  { value: '6',    label: 'Módulos de análisis' },
-  { value: '< 5min', label: 'Para tu primer análisis' },
-  { value: '100%', label: 'Gratis y sin registro' },
+  { value: '6',          label: 'Módulos de análisis' },
+  { value: '5 minutos',  label: 'Para tu primer análisis' },
+  { value: '100%',       label: 'Gratis y sin registro' },
 ]
 
 // ─── Monitor mockup ───────────────────────────────────────────────────────────
@@ -166,6 +166,7 @@ export default function LandingPage() {
   const [activeProfile, setActiveProfile] = useState<'idea' | 'existing' | null>(null)
   const [quizAnswers, setQuizAnswers]     = useState<Record<string, boolean | null>>({})
   const [quizDone, setQuizDone]           = useState(false)
+  const [scrolled, setScrolled]           = useState(false)
 
   const currentProfile = PROFILES.find(p => p.id === activeProfile)
   const answeredCount  = Object.values(quizAnswers).filter(v => v !== null).length
@@ -183,20 +184,37 @@ export default function LandingPage() {
     if (ls.businessName) { setHasProject(true); setProjectName(ls.businessName) }
   }, [])
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <main className="flex flex-col overflow-x-hidden" style={{ background: '#fafafa', color: 'var(--color-text)' }}>
 
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 pointer-events-none">
-      <nav
-        className="w-full max-w-5xl flex items-center justify-between px-5 py-3 pointer-events-auto"
+      <div
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
         style={{
-          background: 'rgba(250,250,250,0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0,0,0,0.08)',
-          borderRadius: '1rem',
-          boxShadow: '0 4px 24px 0 rgb(0 0 0 / 0.07), 0 1px 2px 0 rgb(0 0 0 / 0.04)',
+          padding: scrolled ? '12px 16px 0' : '0',
+          transition: 'padding 0.35s cubic-bezier(0.16,1,0.3,1)',
+        }}
+      >
+      <nav
+        className="w-full flex items-center justify-between pointer-events-auto"
+        style={{
+          maxWidth: scrolled ? '64rem' : '100%',
+          background: scrolled ? 'rgba(250,250,250,0.55)' : 'rgba(250,250,250,0.98)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: scrolled ? '1px solid rgba(0,0,0,0.08)' : 'none',
+          borderBottom: scrolled ? undefined : '1px solid rgba(0,0,0,0.06)',
+          borderRadius: scrolled ? '1rem' : '0',
+          boxShadow: scrolled ? '0 4px 24px 0 rgb(0 0 0 / 0.07), 0 1px 2px 0 rgb(0 0 0 / 0.04)' : 'none',
+          padding: scrolled ? '12px 20px' : '12px 24px',
+          transition: 'max-width 0.35s cubic-bezier(0.16,1,0.3,1), border-radius 0.35s cubic-bezier(0.16,1,0.3,1), background 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease',
         }}
       >
         <div className="flex items-center gap-3">
@@ -410,16 +428,25 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-20px' }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
-                className="flex items-start gap-4 px-5 py-4 rounded-2xl"
+                className="flex items-start gap-5 px-5 py-5 rounded-2xl"
                 style={{ background: '#fafafa', border: '1px solid var(--color-border)' }}
               >
                 <span
-                  className="font-display shrink-0 text-xs font-extrabold w-7 h-7 rounded-lg flex items-center justify-center mt-0.5"
-                  style={{ background: '#0f0f10', color: '#fff' }}
+                  className="shrink-0 leading-none select-none"
+                  style={{
+                    fontFamily: '"Georgia", "Times New Roman", serif',
+                    fontSize: '3rem',
+                    fontWeight: 900,
+                    fontStyle: 'italic',
+                    color: '#0f0f10',
+                    lineHeight: 1,
+                    letterSpacing: '-0.04em',
+                    marginTop: '-4px',
+                  }}
                 >
                   {n}
                 </span>
-                <div>
+                <div className="pt-1">
                   <p className="text-sm font-semibold" style={{ color: '#0f0f10' }}>{label}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{sub}</p>
                 </div>
@@ -454,7 +481,10 @@ export default function LandingPage() {
                 <CheckCircle2 size={16} /> Sí es para ti si...
               </p>
               {FOR_YOU.map((item) => (
-                <p key={item} className="text-sm" style={{ color: '#166534' }}>{item}</p>
+                <p key={item} className="text-sm flex items-center gap-2" style={{ color: '#166534' }}>
+                  <CheckCircle2 size={14} strokeWidth={2.5} style={{ color: '#16a34a', flexShrink: 0 }} />
+                  {item}
+                </p>
               ))}
             </motion.div>
 
@@ -468,7 +498,10 @@ export default function LandingPage() {
                 <XCircle size={16} /> No es para ti si...
               </p>
               {NOT_FOR_YOU.map((item) => (
-                <p key={item} className="text-sm" style={{ color: '#991b1b' }}>{item}</p>
+                <p key={item} className="text-sm flex items-center gap-2" style={{ color: '#991b1b' }}>
+                  <XCircle size={14} strokeWidth={2.5} style={{ color: '#dc2626', flexShrink: 0 }} />
+                  {item}
+                </p>
               ))}
             </motion.div>
           </div>
