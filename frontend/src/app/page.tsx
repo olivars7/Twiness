@@ -7,6 +7,7 @@ import {
   MapPin, TrendingUp, DollarSign, BarChart3, Scale, Bot,
   ArrowRight, Sparkles, ChevronRight, Sprout, Store,
   Coffee, Scissors, Utensils, Dumbbell, CheckCircle2, XCircle,
+  Crown, Mic, Code2, Layers,
 } from 'lucide-react'
 import SquareField from '@/components/ui/SquareField'
 import { useOnboardingStore } from '@/store/onboardingStore'
@@ -603,6 +604,223 @@ export default function LandingPage() {
               )}
             </AnimatePresence>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── EQUIPO ──────────────────────────────────────────────────────────── */}
+      <section
+        className="px-6 sm:px-12 py-20"
+        style={{ background: '#fff', borderTop: '1px solid var(--color-border)' }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.4 }}
+            className="mb-12 text-center"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#6b7280' }}>Equipo</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold" style={{ color: '#0f0f10' }}>
+              Las personas detrás de Twiness
+            </h2>
+            <p className="text-sm mt-3 max-w-xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+              Un equipo de cinco desarrolladores de Tijuana, B.C., construyó este proyecto
+              durante el Bob-a-thon 2025.
+            </p>
+          </motion.div>
+
+          {/* Row 1 — 3 cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            {[
+              { name: 'Dennim Olivares Martínez',         roles: ['Líder de equipo', 'Expositor', 'Contribuidor'], icon: Crown },
+              { name: 'Estrella Anelis Mendivil Lizárraga', roles: ['Contribuidora'],                              icon: Code2 },
+              { name: 'Luis Ángel Mitre Leal',             roles: ['Expositor', 'Contribuidor'],                   icon: Mic  },
+            ].map(({ name, roles, icon: Icon }, i) => (
+              <motion.div
+                key={name}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-20px' }}
+                transition={{ duration: 0.35, delay: i * 0.07 }}
+                className="flex flex-col items-center text-center gap-4 rounded-2xl px-6 py-8"
+                style={{ background: '#fafafa', border: '1px solid var(--color-border)' }}
+              >
+                <span
+                  className="flex items-center justify-center rounded-2xl"
+                  style={{ width: 64, height: 64, background: '#f0f0f2', color: '#0f0f10' }}
+                >
+                  <Icon size={30} strokeWidth={1.25} />
+                </span>
+                <div>
+                  <p className="text-sm font-bold leading-snug mb-2.5" style={{ color: '#0f0f10' }}>{name}</p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {roles.map(role => (
+                      <span
+                        key={role}
+                        className="text-[10px] font-medium px-2.5 py-0.5 rounded-full"
+                        style={{ background: '#f0f0f2', color: '#52525b', border: '1px solid #e4e4e7' }}
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Row 2 — 2 cards centered */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:max-w-2xl sm:mx-auto">
+            {[
+              { name: 'Alejandro Maravilla Orozco',  roles: ['Contribuidor'], icon: Code2 },
+              { name: 'Uriel Antonio Pereyra Alfaro', roles: ['Contribuidor'], icon: Code2 },
+            ].map(({ name, roles, icon: Icon }, i) => (
+              <motion.div
+                key={name}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-20px' }}
+                transition={{ duration: 0.35, delay: 0.21 + i * 0.07 }}
+                className="flex flex-col items-center text-center gap-4 rounded-2xl px-6 py-8"
+                style={{ background: '#fafafa', border: '1px solid var(--color-border)' }}
+              >
+                <span
+                  className="flex items-center justify-center rounded-2xl"
+                  style={{ width: 64, height: 64, background: '#f0f0f2', color: '#0f0f10' }}
+                >
+                  <Icon size={30} strokeWidth={1.25} />
+                </span>
+                <div>
+                  <p className="text-sm font-bold leading-snug mb-2.5" style={{ color: '#0f0f10' }}>{name}</p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {roles.map(role => (
+                      <span
+                        key={role}
+                        className="text-[10px] font-medium px-2.5 py-0.5 rounded-full"
+                        style={{ background: '#f0f0f2', color: '#52525b', border: '1px solid #e4e4e7' }}
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── BOB-A-THON ──────────────────────────────────────────────────────── */}
+      <section
+        className="relative px-6 sm:px-12 py-20 overflow-hidden"
+        style={{ background: '#0a0a0f', borderTop: '1px solid #1a1a28' }}
+      >
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
+        {/* Blue + purple glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 60% 55% at 20% 50%, rgba(59,130,246,0.07) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 80% 50%, rgba(124,58,237,0.07) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative z-10 max-w-5xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.4 }}
+            className="mb-12"
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#4b5563' }}>Contexto</p>
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-4">
+              Construido en el{' '}
+              <span style={{ color: '#3b82f6' }}>Bob-a-thon</span>
+            </h2>
+            <p className="text-sm leading-relaxed max-w-2xl" style={{ color: '#6b7280' }}>
+              El <strong style={{ color: '#9ca3af' }}>Bob-a-thon</strong> es un hackathon organizado por{' '}
+              <strong style={{ color: '#9ca3af' }}>IBM</strong> centrado en el uso de{' '}
+              <strong style={{ color: '#9ca3af' }}>IBM Bob</strong>, el asistente de desarrollo de IA
+              integrado en el IDE. Los equipos tienen un tiempo limitado para concebir, diseñar y construir
+              una aplicación funcional usando IBM Bob como copiloto principal, aprovechando su capacidad de
+              entender contexto de código, generar implementaciones y razonar sobre arquitectura.
+            </p>
+          </motion.div>
+
+          {/* Two columns: what is Bob / stack */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* IBM Bob */}
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="rounded-2xl p-6"
+              style={{ background: '#111118', border: '1px solid #1f1f2e' }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: '#3b82f614', color: '#3b82f6' }}>
+                  <Bot size={17} strokeWidth={1.75} />
+                </span>
+                <p className="text-sm font-bold text-white">IBM Bob</p>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: '#6b7280' }}>
+                IBM Bob es un asistente de IA para desarrolladores que vive directamente en el IDE.
+                Entiende el contexto completo del proyecto — archivos, dependencias, historial — y
+                puede escribir código, refactorizar, depurar y razonar sobre arquitectura sin salir
+                del entorno de trabajo. En Twiness, Bob fue usado para acelerar la implementación
+                de componentes, lógica financiera y la integración con <strong style={{ color: '#9ca3af' }}>watsonx.ai</strong>.
+              </p>
+            </motion.div>
+
+            {/* Stack */}
+            <motion.div
+              initial={{ opacity: 0, x: 16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.06 }}
+              className="rounded-2xl p-6"
+              style={{ background: '#111118', border: '1px solid #1f1f2e' }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: '#7c3aed14', color: '#7c3aed' }}>
+                  <Layers size={17} strokeWidth={1.75} />
+                </span>
+                <p className="text-sm font-bold text-white">Stack tecnológico</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: 'Next.js 15',    color: '#f4f4f5' },
+                  { label: 'TypeScript',    color: '#3b82f6' },
+                  { label: 'React 19',      color: '#38bdf8' },
+                  { label: 'Tailwind CSS',  color: '#10b981' },
+                  { label: 'Framer Motion', color: '#a78bfa' },
+                  { label: 'Zustand',       color: '#f59e0b' },
+                  { label: 'Recharts',      color: '#f97316' },
+                  { label: 'Lucide React',  color: '#6b7280' },
+                  { label: 'watsonx.ai',    color: '#3b82f6' },
+                  { label: 'IBM Bob',       color: '#60a5fa' },
+                ].map(({ label, color }) => (
+                  <span
+                    key={label}
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+                    style={{ background: '#1a1a28', color, border: '1px solid #2a2a3a' }}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+          </div>
         </div>
       </section>
 
