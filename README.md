@@ -1,10 +1,10 @@
-# viabL — Tu negocio, antes de arriesgar un peso
+# TWINESS — Tu negocio, antes de arriesgar un peso
 
 viabL es una herramienta gratuita para emprendedores que quieren saber si su idea de negocio tiene futuro **antes** de invertir tiempo y dinero. En lugar de hojas de cálculo complicadas o consultores caros, viabL te guía paso a paso con información real de tu zona.
 
 ---
 
-## ¿Para quién es viabL?
+## ¿Para quién es Twiness?
 
 Para ti, si estás pensando en abrir:
 - Una cafetería, restaurante o puesto de comida
@@ -16,7 +16,7 @@ No necesitas saber de finanzas ni de tecnología para usarlo.
 
 ---
 
-## ¿Qué puedes hacer con viabL?
+## ¿Qué puedes hacer con Twiness?
 
 ### 📍 Zona estratégica
 Elige dónde poner tu negocio sobre un mapa real de tu ciudad. viabL te muestra cuánta gente pasa por ahí, qué tan seguros están los alrededores, dónde está tu competencia y qué zonas tienen más oportunidad para tu tipo de negocio.
@@ -45,7 +45,7 @@ Todo queda guardado en tu sesión para que puedas volver cuando quieras.
 
 ---
 
-## Lo que hace diferente a viabL
+## Lo que hace diferente a Twiness
 
 - **Sin hojas de cálculo** — todo es visual y fácil de entender
 - **Datos reales de tu zona** — no estadísticas genéricas del país
