@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import {
   ClipboardList, BarChart3, DollarSign, MapPin, Users,
-  Store, Rocket, Lightbulb, PenLine, RotateCcw, Check,
-  TrendingUp, ArrowUpRight,
+  PenLine, RotateCcw, Check,
+  TrendingUp, ArrowUpRight, Clock,
 } from 'lucide-react'
 import { useLocalBusinessData } from '@/hooks/useLocalBusinessData'
 import { useOnboardingStore, type OnboardingData } from '@/store/onboardingStore'
@@ -379,7 +379,7 @@ export default function MisDatosPage() {
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#4b5563' }}>Ciudad</p>
-              <p className="text-sm font-medium" style={{ color: '#d1d5db' }}>{data.targetCity || data.locationCity || '—'}</p>
+              <p className="text-sm font-medium" style={{ color: '#d1d5db' }}>{data.locationCity || '—'}</p>
             </div>
             {statusInfo && (
               <div>
@@ -438,7 +438,7 @@ export default function MisDatosPage() {
         </motion.div>
 
         {/* ── Section C: Ubicación ─────────────────────────────────────────── */}
-        {(data.targetCity || data.targetZone || data.locationCountry || data.locationCity) && (
+        {(data.locationCountry || data.locationCity) && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
             <Section
               icon={<MapPin size={15} strokeWidth={1.75} />}
@@ -447,79 +447,45 @@ export default function MisDatosPage() {
               badgeColor="bg-blue-50 text-blue-700 border border-blue-200"
               accentColor="#3b82f6"
             >
-              {data.targetCity          !== undefined && <EditableField label="Ciudad objetivo"   fieldKey="targetCity"            value={data.targetCity}            onSave={save} />}
-              {data.targetZone          !== undefined && <EditableField label="Zona / Colonia"     fieldKey="targetZone"            value={data.targetZone}            onSave={save} placeholder="No especificada" />}
-              {data.locationCountry     !== undefined && <EditableField label="País"               fieldKey="locationCountry"       value={data.locationCountry}       onSave={save} placeholder="No especificado" />}
-              {data.locationState       !== undefined && <EditableField label="Estado"             fieldKey="locationState"         value={data.locationState}         onSave={save} placeholder="No especificado" />}
-              {data.locationCity        !== undefined && <EditableField label="Ciudad del local"   fieldKey="locationCity"          value={data.locationCity}          onSave={save} placeholder="No especificada" />}
-              {data.locationNeighborhood !== undefined && <EditableField label="Colonia / Fracc."  fieldKey="locationNeighborhood"  value={data.locationNeighborhood}  onSave={save} placeholder="No especificada" />}
+              {data.locationCountry      !== undefined && <EditableField label="País"             fieldKey="locationCountry"      value={data.locationCountry}      onSave={save} placeholder="No especificado" />}
+              {data.locationState        !== undefined && <EditableField label="Estado"           fieldKey="locationState"        value={data.locationState}        onSave={save} placeholder="No especificado" />}
+              {data.locationCity         !== undefined && <EditableField label="Ciudad"           fieldKey="locationCity"         value={data.locationCity}         onSave={save} placeholder="No especificada" />}
+              {data.locationNeighborhood !== undefined && <EditableField label="Colonia / Fracc." fieldKey="locationNeighborhood" value={data.locationNeighborhood} onSave={save} placeholder="No especificada" />}
             </Section>
           </motion.div>
         )}
 
-        {/* ── Section D: Cliente objetivo ──────────────────────────────────── */}
-        {(data.targetCustomer || data.salesChannel) && (
+        {/* ── Section D: Operación ─────────────────────────────────────────── */}
+        {(data.operatingHours || data.employeeCount || data.salesChannel) && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}>
             <Section
-              icon={<Users size={15} strokeWidth={1.75} />}
-              title="Cliente objetivo"
+              icon={<Clock size={15} strokeWidth={1.75} />}
+              title="Operación"
               badge="D"
-              badgeColor="bg-purple-50 text-purple-700 border border-purple-200"
-              accentColor="#7c3aed"
+              badgeColor="bg-green-50 text-green-700 border border-green-200"
+              accentColor="#16a34a"
             >
-              {data.targetCustomer  !== undefined && <EditableField label="Perfil de cliente"    fieldKey="targetCustomer"  value={data.targetCustomer}  onSave={save} />}
-              {data.salesChannel    !== undefined && <EditableField label="Canal de venta"        fieldKey="salesChannel"    value={data.salesChannel}    onSave={save} />}
-              {data.estimatedBudget !== undefined && <EditableField label="Presupuesto est. ($)"  fieldKey="estimatedBudget" value={data.estimatedBudget} onSave={save} type="number" />}
+              {data.salesChannel    !== undefined && <EditableField label="Canal de venta"  fieldKey="salesChannel"    value={data.salesChannel}    onSave={save} placeholder="No especificado" />}
+              {data.operatingHours  !== undefined && <EditableField label="Horario"         fieldKey="operatingHours"  value={data.operatingHours}  onSave={save} placeholder="No especificado" />}
+              {data.employeeCount   !== undefined && <EditableField label="Empleados"       fieldKey="employeeCount"   value={data.employeeCount}   onSave={save} placeholder="No ingresado" type="number" />}
             </Section>
           </motion.div>
         )}
 
-        {/* ── Section E: Negocio existente ─────────────────────────────────── */}
-        {status === 'existente' && (
+        {/* ── Section E: Escala & motivación ───────────────────────────────── */}
+        {(data.monthlyUnits || data.capitalAvailable || data.targetCustomer || data.businessMotivation) && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Section
-              icon={<Store size={15} strokeWidth={1.75} />}
-              title="Datos del negocio actual"
-              badge="E"
-              badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200"
-              accentColor="#10b981"
-            >
-              <EditableField label="Meses operando"    fieldKey="monthsOperating"        value={data.monthsOperating}        onSave={save} placeholder="No ingresado" type="number" />
-              <EditableField label="Empleados"          fieldKey="employeeCount"          value={data.employeeCount}          onSave={save} placeholder="No ingresado" type="number" />
-              <EditableField label="Ingresos/mes"       fieldKey="currentMonthlyRevenue"  value={data.currentMonthlyRevenue}  onSave={save} placeholder="No ingresado" type="number" />
-              <EditableField label="Gastos fijos/mes"   fieldKey="currentMonthlyExpenses" value={data.currentMonthlyExpenses} onSave={save} placeholder="No ingresado" type="number" />
-              <EditableField label="Mayor reto"         fieldKey="mainChallenge"          value={data.mainChallenge}          onSave={save} />
-            </Section>
-          </motion.div>
-        )}
-
-        {/* ── Section E: Negocio nuevo ─────────────────────────────────────── */}
-        {status === 'nuevo' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Section
-              icon={<Rocket size={15} strokeWidth={1.75} />}
-              title="Plan de apertura"
-              badge="E"
-              badgeColor="bg-emerald-50 text-emerald-700 border border-emerald-200"
-              accentColor="#10b981"
-            >
-              <EditableField label="Fecha apertura"    fieldKey="plannedOpeningDate" value={data.plannedOpeningDate} onSave={save} placeholder="No especificada" type="month" />
-              <EditableField label="Inversión inicial" fieldKey="initialInvestment"  value={data.initialInvestment}  onSave={save} placeholder="No ingresada"  type="number" />
-            </Section>
-          </motion.div>
-        )}
-
-        {/* ── Section E: Hipotético ─────────────────────────────────────────── */}
-        {status === 'hipotetico' && data.problemSolved && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Section
-              icon={<Lightbulb size={15} strokeWidth={1.75} />}
-              title="Propuesta de valor"
+              icon={<Users size={15} strokeWidth={1.75} />}
+              title="Escala & cliente"
               badge="E"
               badgeColor="bg-purple-50 text-purple-700 border border-purple-200"
               accentColor="#7c3aed"
             >
-              <EditableField label="Problema que resuelves" fieldKey="problemSolved" value={data.problemSolved} onSave={save} multiline />
+              {data.monthlyUnits        !== undefined && <EditableField label="Unidades / mes"    fieldKey="monthlyUnits"        value={data.monthlyUnits}        onSave={save} placeholder="No ingresado" type="number" />}
+              {data.capitalAvailable    !== undefined && <EditableField label="Capital ($)"       fieldKey="capitalAvailable"    value={data.capitalAvailable}    onSave={save} placeholder="No ingresado" type="number" />}
+              {data.targetCustomer      !== undefined && <EditableField label="Perfil de cliente" fieldKey="targetCustomer"      value={data.targetCustomer}      onSave={save} placeholder="No especificado" />}
+              {data.businessMotivation  !== undefined && <EditableField label="Motivación / reto" fieldKey="businessMotivation"  value={data.businessMotivation}  onSave={save} placeholder="No especificado" multiline />}
             </Section>
           </motion.div>
         )}

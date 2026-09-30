@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 
 interface Square {
   x: number
@@ -14,7 +14,7 @@ interface Square {
   phase: number       // for opacity pulse
 }
 
-export default function SquareField({ className = '' }: { className?: string }) {
+export default function SquareField({ className = '', style }: { className?: string; style?: CSSProperties }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -104,6 +104,7 @@ export default function SquareField({ className = '' }: { className?: string }) 
     <canvas
       ref={canvasRef}
       className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
+      style={style}
     />
   )
 }

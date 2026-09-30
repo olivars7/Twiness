@@ -3,38 +3,17 @@ import { create } from 'zustand'
 export type BusinessStatus = 'existente' | 'nuevo' | 'hipotetico' | null
 
 export interface OnboardingData {
-  // ── Sección A: Identidad ───────────────────────────────────────────────────
-  businessStatus: BusinessStatus
+  // ── Paso 0: Contexto ──────────────────────────────────────────────────────
+  businessStatus: BusinessStatus          // etapa del negocio
+
+  // ── Paso 1: Tipo de negocio ───────────────────────────────────────────────
   businessType: string
+
+  // ── Paso 2: Identidad ─────────────────────────────────────────────────────
   businessName: string
   businessDescription: string
 
-  // ── Sección B: Finanzas base (todos — Step 2.5) ───────────────────────────
-  // Producto 1
-  product1Name: string          // Nombre del producto/servicio principal
-  product1Price: string         // Precio de venta ($)
-  product1Cost: string          // Costo variable por unidad ($)
-  product1Unit: string          // Unidad de medida (pieza, kg, hora…)
-  // Producto 2
-  product2Name: string          // Nombre del segundo producto/servicio
-  product2Price: string         // Precio de venta ($)
-  product2Cost: string          // Costo variable por unidad ($)
-  product2Unit: string          // Unidad de medida
-  // Global
-  monthlyFixedCosts: string     // Gastos fijos mensuales estimados
-  extraProducts: string         // JSON array of {name,price,cost,unit} for products 3+
-
-  // ── Sección C: Negocio EXISTENTE ──────────────────────────────────────────
-  monthsOperating: string
-  currentMonthlyRevenue: string
-  currentMonthlyExpenses: string
-  employeeCount: string
-  mainChallenge: string
-
-  // ── Sección D: Negocio NUEVO ──────────────────────────────────────────────
-  plannedOpeningDate: string
-  initialInvestment: string
-  hasLocation: boolean | null
+  // ── Paso 3: Ubicación ─────────────────────────────────────────────────────
   locationCountry: string
   locationState: string
   locationCity: string
@@ -42,29 +21,45 @@ export interface OnboardingData {
   locationLat: number | null
   locationLng: number | null
 
-  // ── Sección E: Negocio HIPOTÉTICO ─────────────────────────────────────────
-  targetCity: string
-  targetZone: string
-  estimatedBudget: string
-  targetCustomer: string
-  salesChannel: string
-  problemSolved: string
+  // ── Paso 4: Operación ─────────────────────────────────────────────────────
+  operatingHours: string                  // ej. "Corrido (8–20h)" o texto libre
+  employeeCount: string                   // número de empleados (texto para consistencia)
+  salesChannel: string                    // canal de venta principal
 
-  // ── Sección F: Análisis / Proyección ──────────────────────────────────────
-  costVariablePct: string        // % costos variables (0–80) para estado de resultados
-  ventasEstimadasMes: string     // Ventas estimadas por mes $ (nuevo)
-  ticketPromedio: string         // Ticket promedio $ (nuevo)
+  // ── Paso 5: Productos & costos ────────────────────────────────────────────
+  // Producto 1 (requerido)
+  product1Name: string
+  product1Price: string
+  product1Cost: string
+  product1Unit: string
+  // Producto 2 (opcional)
+  product2Name: string
+  product2Price: string
+  product2Cost: string
+  product2Unit: string
+  // Productos adicionales (3+) serializados como JSON
+  extraProducts: string                   // JSON: Array<{name,price,cost,unit}>
+  // Gastos fijos (todos los flujos)
+  monthlyFixedCosts: string
 
-  // ── Sección G: Estado de Resultados (financiero) ──────────────────────────
-  er_precioPromedio: string        // Precio promedio por unidad ($)
-  er_ventasEstimadasMes: string    // Unidades estimadas por mes
-  er_costoVariableUnitario: string // Costo variable por unidad ($)
-  er_gastosOperativosFijos: string // Gastos fijos mensuales ($)
-  er_gastosAdministrativos: string // Gastos administrativos y de ventas ($)
-  er_otrosIngresos: string         // Otros ingresos mensuales ($)
-  er_impuestosPct: string          // Tasa de impuestos % (0–100)
-  er_inversionInicial: string      // Inversión inicial ($)
-  er_tasaCrecimiento: string       // Tasa de crecimiento mensual (0.01 = 1%)
+  // ── Paso 6: Escala ────────────────────────────────────────────────────────
+  monthlyUnits: string                    // unidades/mes que vende o estima vender
+  capitalAvailable: string                // capital disponible / inversión inicial
+
+  // ── Paso 7: Cliente & motivación (skipeable) ──────────────────────────────
+  targetCustomer: string                  // perfil de cliente
+  businessMotivation: string             // reto actual O razón de la idea (texto libre)
+
+  // ── Parámetros financieros (Estado de Resultados — editados en su módulo) ──
+  er_precioPromedio: string
+  er_ventasEstimadasMes: string
+  er_costoVariableUnitario: string
+  er_gastosOperativosFijos: string
+  er_gastosAdministrativos: string
+  er_otrosIngresos: string
+  er_impuestosPct: string
+  er_inversionInicial: string
+  er_tasaCrecimiento: string
 }
 
 interface OnboardingStore {

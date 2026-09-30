@@ -163,7 +163,7 @@ export default function ProyectoHubPage() {
   const merged = { ...storeData, ...lsData }
   const businessName = merged.businessName || 'Mi Negocio'
   const businessType = (merged.businessType as string) || ''
-  const city = (merged.locationCity as string) || (merged.targetCity as string) || 'Tijuana, B.C.'
+  const city = (merged.locationCity as string) || 'Tijuana, B.C.'
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
