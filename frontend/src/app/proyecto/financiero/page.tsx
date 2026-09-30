@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, DollarSign, CheckCircle, XCircle, AlertCircle, Lightbulb, ArrowUpRight, Scissors, Users, Target, TrendingDown, TriangleAlert, RotateCcw, Save, ChevronDown } from 'lucide-react'
+import { TrendingUp, DollarSign, CheckCircle, XCircle, AlertCircle, Lightbulb, ArrowUpRight, Scissors, Users, Target, TrendingDown, TriangleAlert, RotateCcw, Save } from 'lucide-react'
 import { calcBreakEven, calcIncomeStatement, calcProjection, calcDemandFactor, getPriceWarning, type PriceWarning } from '@/lib/financial'
 import BreakEvenChart from '@/components/charts/BreakEvenChart'
 import CashFlowChart from '@/components/charts/CashFlowChart'
@@ -187,6 +187,15 @@ const VERDICT_META = {
 }
 
 // ─── ScenarioRow ──────────────────────────────────────────────────────────────
+function fmtK(n: number): string {
+  const abs = Math.abs(n)
+  let s: string
+  if (abs >= 1_000_000) s = `$${(abs / 1_000_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })}M`
+  else if (abs >= 1_000)  s = `$${(abs / 1_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })}k`
+  else                    s = `$${abs.toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
+  return n < 0 ? `−${s}` : s
+}
+
 function ScenarioRow({
   label, delta, unidades, precio, costoVar, costosFijos, isBase = false,
 }: {
@@ -198,28 +207,25 @@ function ScenarioRow({
   const positivo = utilidad >= 0
   return (
     <div
-      className="grid items-center text-sm py-2.5 px-1 rounded-lg"
+      className="grid items-center px-1 rounded-lg"
       style={{
-        gridTemplateColumns: '80px 1fr 1fr auto',
-        gap: '0.75rem',
+        gridTemplateColumns: '44px 1fr 1fr',
+        gap: '0.4rem',
         background: isBase ? 'var(--color-input)' : undefined,
         borderBottom: '1px solid var(--color-border)',
+        flex: 1,
+        minHeight: 0,
+        padding: '0.35rem 0.25rem',
       }}
     >
-      <span className="text-xs font-semibold" style={{ color: isBase ? 'var(--color-text)' : 'var(--color-text-secondary)' }}>
+      <span className="text-[11px] font-semibold" style={{ color: isBase ? 'var(--color-text)' : 'var(--color-text-secondary)' }}>
         {label}
       </span>
-      <span style={{ color: 'var(--color-text-secondary)' }}>
-        {uds.toLocaleString()} uds
+      <span className="text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
+        {uds >= 1000 ? `${(uds / 1000).toLocaleString('es-MX', { maximumFractionDigits: 1 })}k` : uds.toLocaleString()}
       </span>
-      <span className="font-semibold" style={{ color: positivo ? '#16a34a' : '#dc2626' }}>
-        {fmt(utilidad)}
-      </span>
-      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-        style={positivo
-          ? { background: '#dcfce7', color: '#166534' }
-          : { background: '#fee2e2', color: '#991b1b' }}>
-        {positivo ? '✓' : '✗'}
+      <span className="text-[11px] font-semibold" style={{ color: positivo ? '#16a34a' : '#dc2626' }}>
+        {fmtK(utilidad)}
       </span>
     </div>
   )
@@ -285,9 +291,6 @@ export default function SimuladorRentabilidadPage() {
 
   // ─── Switch escenario en gráfica BE ───────────────────────────────────────
   const [scenarioIdx, setScenarioIdx] = useState(2) // índice 2 = Base
-
-  // ─── Accordion "¿Qué pasa si…?" ──────────────────────────────────────────
-  const [scenariosOpen, setScenariosOpen] = useState(false)
 
   // ─── Popup confirmación "Guardar como original" ────────────────────────────
   const [showSaveConfirm, setShowSaveConfirm] = useState(false)
@@ -524,16 +527,18 @@ export default function SimuladorRentabilidadPage() {
               ) : null}
             </div>
             {/* Toggle IVA */}
-            <button
-              onClick={() => setIvaIncluido(v => !v)}
-              className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition"
-              style={ivaIncluido
-                ? { background: '#16a34a20', color: '#4ade80', border: '1px solid #16a34a40' }
-                : { background: '#ffffff10', color: '#71717a', border: '1px solid #27272a' }}
-            >
-              IVA {ivaIncluido ? 'incl. ✓' : 'excl.'}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIvaIncluido(v => !v)}
+                className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition"
+                style={ivaIncluido
+                  ? { background: '#16a34a20', color: '#4ade80', border: '1px solid #16a34a40' }
+                  : { background: '#ffffff10', color: '#71717a', border: '1px solid #27272a' }}
+              >
+                IVA {ivaIncluido ? 'incl. ✓' : 'excl.'}
+              </button>
               <InfoTooltip variant="dark" text="Activa si tu precio incluye IVA (16%). El simulador descuenta el impuesto para calcular el margen real." />
-            </button>
+            </div>
           </div>
 
           {/* IVA hint */}
@@ -800,73 +805,68 @@ export default function SimuladorRentabilidadPage() {
         />
       </motion.div>
 
-      {/* ── Sección 3: Veredicto ── */}
+      {/* ── Sección 3: Veredicto + Escenarios ── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
-        <div className="rounded-2xl p-5" style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
-          {/* Veredicto header */}
-          <div className="flex items-center gap-3 mb-5">
-            <VerdictIcon size={22} strokeWidth={2} style={{ color: meta.iconColor }} />
-            <p className="text-lg font-black" style={{ color: meta.darkBox ? meta.text : 'var(--color-text)' }}>{meta.label}</p>
+        <div className="flex gap-3 items-stretch">
+
+          {/* Veredicto — 70% */}
+          <div className="rounded-2xl p-5 flex-1 min-w-0" style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+            {/* Veredicto header */}
+            <div className="flex items-center gap-3 mb-5">
+              <VerdictIcon size={22} strokeWidth={2} style={{ color: meta.iconColor }} />
+              <p className="text-lg font-black" style={{ color: meta.darkBox ? meta.text : 'var(--color-text)' }}>{meta.label}</p>
+            </div>
+
+            {/* KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[
+                { label: 'Punto de equilibrio', value: isFinite(be.unidades) ? Math.ceil(be.unidades).toLocaleString() : '∞', sub: 'unidades / mes',   color: '#f4f4f5' },
+                { label: 'Ventas mínimas',      value: isFinite(be.ventasBreakEven) ? fmt(be.ventasBreakEven) : '∞',          sub: 'para no perder',   color: '#60a5fa' },
+                { label: 'Utilidad mensual',    value: fmt(income.utilidadOperativa),  sub: `margen ${(income.margenOperativo * 100).toFixed(1)}%`,     color: income.utilidadOperativa >= 0 ? '#4ade80' : '#f87171' },
+                { label: 'Margen de seguridad', value: `${(be.margenSeguridad * 100).toFixed(1)}%`, sub: 'caída tolerable', color: be.margenSeguridad >= 0.2 ? '#4ade80' : be.margenSeguridad >= 0 ? '#fbbf24' : '#f87171' },
+                { label: 'Recuperación inv.',   value: mesRecuperacion ? `Mes ${mesRecuperacion}` : 'N/A', sub: `${fmt(inversion)} inicial`, color: mesRecuperacion ? '#4ade80' : '#f87171' },
+                { label: 'Margen contribución', value: fmt(mc), sub: `${precio > 0 ? ((mc / precio) * 100).toFixed(0) : 0}% del precio`, color: mc >= 0 ? '#f4f4f5' : '#f87171' },
+              ].map(({ label, value, sub, color }) => (
+                <div key={label}>
+                  <p className="text-xs mb-1" style={{ color: meta.darkBox ? meta.text : 'var(--color-text-secondary)', opacity: meta.darkBox ? 0.6 : 1 }}>{label}</p>
+                  <p className="text-xl font-black" style={{ color: meta.darkBox ? color : color }}>{value}</p>
+                  <p className="text-xs mt-0.5" style={{ color: meta.darkBox ? meta.text : 'var(--color-text-muted)', opacity: meta.darkBox ? 0.5 : 1 }}>{sub}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* KPIs */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {[
-              { label: 'Punto de equilibrio', value: isFinite(be.unidades) ? Math.ceil(be.unidades).toLocaleString() : '∞', sub: 'unidades / mes',   color: '#f4f4f5' },
-              { label: 'Ventas mínimas',      value: isFinite(be.ventasBreakEven) ? fmt(be.ventasBreakEven) : '∞',          sub: 'para no perder',   color: '#60a5fa' },
-              { label: 'Utilidad mensual',    value: fmt(income.utilidadOperativa),  sub: `margen ${(income.margenOperativo * 100).toFixed(1)}%`,     color: income.utilidadOperativa >= 0 ? '#4ade80' : '#f87171' },
-              { label: 'Margen de seguridad', value: `${(be.margenSeguridad * 100).toFixed(1)}%`, sub: 'caída tolerable', color: be.margenSeguridad >= 0.2 ? '#4ade80' : be.margenSeguridad >= 0 ? '#fbbf24' : '#f87171' },
-              { label: 'Recuperación inv.',   value: mesRecuperacion ? `Mes ${mesRecuperacion}` : 'N/A', sub: `${fmt(inversion)} inicial`, color: mesRecuperacion ? '#4ade80' : '#f87171' },
-              { label: 'Margen contribución', value: fmt(mc), sub: `${precio > 0 ? ((mc / precio) * 100).toFixed(0) : 0}% del precio`, color: mc >= 0 ? '#f4f4f5' : '#f87171' },
-            ].map(({ label, value, sub, color }) => (
-              <div key={label}>
-                <p className="text-xs mb-1" style={{ color: meta.darkBox ? meta.text : 'var(--color-text-secondary)', opacity: meta.darkBox ? 0.6 : 1 }}>{label}</p>
-                <p className="text-xl font-black" style={{ color: meta.darkBox ? color : color }}>{value}</p>
-                <p className="text-xs mt-0.5" style={{ color: meta.darkBox ? meta.text : 'var(--color-text-muted)', opacity: meta.darkBox ? 0.5 : 1 }}>{sub}</p>
-              </div>
-            ))}
+          {/* Escenarios — 30% */}
+          <div className="rounded-2xl p-4 flex flex-col" style={{ width: '30%', flexShrink: 0, background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+            <div className="flex items-center gap-1 mb-2">
+              <p className="text-[11px] font-semibold leading-tight" style={{ color: 'var(--color-text-secondary)' }}>
+                ¿Qué pasa si mis ventas cambian?
+              </p>
+              <InfoTooltip text="Muestra cuánto ganarías o perderías si vendes más o menos de lo estimado. El escenario base son tus unidades actuales." />
+            </div>
+            {/* Cabecera de columnas */}
+            <div className="grid px-1 mb-0.5"
+              style={{ gridTemplateColumns: '44px 1fr 1fr', gap: '0.4rem' }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Cambio</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Uds</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>Utilidad</span>
+            </div>
+            <div className="flex flex-col flex-1">
+              {SCENARIO_DELTAS.map(row => (
+                <ScenarioRow
+                  key={row.label}
+                  label={row.label}
+                  delta={row.delta}
+                  unidades={unidades}
+                  precio={precio}
+                  costoVar={costoVar}
+                  costosFijos={costosFijos}
+                  isBase={row.isBase}
+                />
+              ))}
+            </div>
           </div>
-          {/* Accordion: ¿Qué pasa si mis ventas cambian? */}
-          <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${meta.border}` }}>
-            <button
-              onClick={() => setScenariosOpen(v => !v)}
-              className="w-full flex items-center justify-between gap-2 text-left"
-            >
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs font-semibold" style={{ color: meta.darkBox ? meta.text : 'var(--color-text-secondary)' }}>
-                  ¿Qué pasa si mis ventas cambian?
-                </p>
-                <InfoTooltip text="Muestra cuánto ganarías o perderías si vendes más o menos de lo estimado. El escenario base son tus unidades actuales." />
-              </div>
-              <ChevronDown
-                size={14} strokeWidth={2}
-                style={{
-                  color: meta.darkBox ? meta.text : 'var(--color-text-muted)',
-                  transform: scenariosOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s',
-                  flexShrink: 0,
-                  opacity: meta.darkBox ? 0.6 : 1,
-                }}
-              />
-            </button>
 
-            {scenariosOpen && (
-              <div className="mt-3 space-y-0.5">
-                {SCENARIO_DELTAS.map(row => (
-                  <ScenarioRow
-                    key={row.label}
-                    label={row.label}
-                    delta={row.delta}
-                    unidades={unidades}
-                    precio={precio}
-                    costoVar={costoVar}
-                    costosFijos={costosFijos}
-                    isBase={row.isBase}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </motion.div>
 
